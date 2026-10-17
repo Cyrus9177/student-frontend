@@ -3,28 +3,45 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Laboratory Student Attendance System — LabAttendanceDBBAUTISTA</title>
+  <title>Office of the Registrar — Laboratory Attendance Console</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap" rel="stylesheet" />
   <style>
     :root {
-      --bg: #f8fafc;
-      --surface: #ffffff;
-      --border: #e2e8f0;
-      --text: #0f172a;
-      --muted: #475569;
-      --primary: #1d4ed8;
-      --primary-hover: #1e40af;
-      --present-bg: #dcfce7;
-      --present-text: #166534;
-      --absent-bg: #fee2e2;
-      --absent-text: #991b1b;
-      --late-bg: #fef3c7;
-      --late-text: #92400e;
-      --error-bg: #fef2f2;
-      --error-border: #fecaca;
-      --error-text: #b91c1c;
-      --success-bg: #f0fdf4;
-      --success-border: #bbf7d0;
-      --success-text: #15803d;
+      /* Exact Academic Registrar & Minimal Data Console Palette */
+      --bg-main: #F6F6F2;
+      --navy-primary: #203649;
+      --navy-hover: #182938;
+      --navy-subtle: #EBF0F4;
+      --green-accent: #547163;
+      --green-hover: #445D51;
+      --surface-white: #FFFFFF;
+      --surface-muted: #FBFBFA;
+      --text-main: #263238;
+      --text-secondary: #67736D;
+      --border-color: #E1E4DC;
+      --border-strong: #C9CEC2;
+
+      /* Restrained Academic Status Palette */
+      --present-bg: #EEF3F0;
+      --present-border: #C5D4CC;
+      --present-text: #3A5448;
+      --present-dot: #547163;
+
+      --late-bg: #FAF4E8;
+      --late-border: #E3D1AD;
+      --late-text: #7D5814;
+      --late-dot: #B78327;
+
+      --absent-bg: #F9EFEF;
+      --absent-border: #DFC3C1;
+      --absent-text: #7E312C;
+      --absent-dot: #A94640;
+
+      --font-serif: "Source Serif 4", Georgia, Cambria, serif;
+      --font-sans: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
     }
 
     * {
@@ -33,27 +50,58 @@
 
     body {
       margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      background-color: var(--bg);
-      color: var(--text);
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      font-size: 14px;
       line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
     }
 
-    header {
-      background-color: var(--surface);
-      border-bottom: 1px solid var(--border);
-      padding: 1.25rem 1.5rem;
+    /* Keyframe Animations */
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
     }
 
-    .container {
-      max-width: 1180px;
+    @keyframes rowReveal {
+      from {
+        opacity: 0;
+        transform: translateY(5px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes modalFadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(8px) scale(0.985);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    @keyframes pulseOutline {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(84, 113, 99, 0.35); }
+      50% { box-shadow: 0 0 0 4px rgba(84, 113, 99, 0.12); }
+    }
+
+    /* Academic Institutional Top Header */
+    .registrar-topbar {
+      background-color: var(--navy-primary);
+      color: #FFFFFF;
+      border-bottom: 3px solid var(--green-accent);
+    }
+
+    .topbar-inner {
+      max-width: 1240px;
       margin: 0 auto;
-      padding: 1.5rem;
-    }
-
-    .header-inner {
-      max-width: 1180px;
-      margin: 0 auto;
+      padding: 1rem 1.5rem;
       display: flex;
       flex-wrap: wrap;
       justify-content: space-between;
@@ -61,358 +109,986 @@
       gap: 1rem;
     }
 
-    h1 {
-      margin: 0;
-      font-size: 1.4rem;
+    .institution-identity {
+      display: flex;
+      align-items: center;
+      gap: 0.9rem;
     }
 
-    .subtitle {
-      margin: 0.25rem 0 0;
-      font-size: 0.875rem;
-      color: var(--muted);
-    }
-
-    .badge-endpoint {
-      font-family: monospace;
-      font-size: 0.8rem;
-      background: #f1f5f9;
-      border: 1px solid var(--border);
-      padding: 0.35rem 0.65rem;
+    .crest-box {
+      width: 38px;
+      height: 38px;
+      border: 1px solid rgba(255, 255, 255, 0.28);
       border-radius: 6px;
-      color: var(--muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255, 255, 255, 0.06);
+      flex-shrink: 0;
     }
 
-    .alert {
-      padding: 0.85rem 1rem;
-      border-radius: 8px;
+    .crest-box svg {
+      width: 20px;
+      height: 20px;
+      stroke: #E1E4DC;
+    }
+
+    .institution-kicker {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+      color: #B8C7D4;
+      margin-bottom: 0.1rem;
+    }
+
+    .institution-title {
+      margin: 0;
+      font-family: var(--font-serif);
+      font-size: 1.25rem;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      color: #FFFFFF;
+    }
+
+    .topbar-controls {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+      flex-wrap: wrap;
+    }
+
+    .db-telemetry {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(0, 0, 0, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      padding: 0.35rem 0.65rem;
+      border-radius: 5px;
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: #DCE4EC;
+    }
+
+    .telemetry-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background-color: #68A387;
+    }
+
+    .btn-header-refresh {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      background-color: rgba(255, 255, 255, 0.1);
+      color: #FFFFFF;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      border-radius: 5px;
+      padding: 0.42rem 0.8rem;
+      font-family: var(--font-sans);
+      font-size: 0.78rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background-color 0.15s ease, border-color 0.15s ease;
+    }
+
+    .btn-header-refresh:hover:not(:disabled) {
+      background-color: rgba(255, 255, 255, 0.18);
+      border-color: rgba(255, 255, 255, 0.4);
+    }
+
+    .btn-header-refresh:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .btn-header-refresh svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    .btn-header-refresh.spinning svg {
+      animation: spin 0.75s linear infinite;
+    }
+
+    /* Main Workspace Layout */
+    .console-wrapper {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 1.5rem;
+    }
+
+    /* Subheader Metadata Strip */
+    .context-strip {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.75rem;
+      padding-bottom: 1rem;
       margin-bottom: 1.25rem;
-      font-size: 0.925rem;
-      display: none;
+      border-bottom: 1px solid var(--border-color);
+      color: var(--text-secondary);
+      font-size: 0.8rem;
     }
 
-    .alert.visible {
-      display: block;
-    }
-
-    .alert-error {
-      background-color: var(--error-bg);
-      border: 1px solid var(--error-border);
-      color: var(--error-text);
-    }
-
-    .alert-success {
-      background-color: var(--success-bg);
-      border: 1px solid var(--success-border);
-      color: var(--success-text);
-    }
-
-    .grid-forms {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    .context-meta {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
       gap: 1.25rem;
-      margin-bottom: 1.5rem;
     }
 
-    .card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 1.25rem;
-      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+    .context-meta strong {
+      color: var(--text-main);
+      font-weight: 600;
     }
 
-    .card h2 {
-      margin-top: 0;
-      margin-bottom: 0.35rem;
+    .mono-code {
+      font-family: var(--font-mono);
+      font-size: 0.76rem;
+      color: var(--navy-primary);
+      background: #EAECE5;
+      padding: 0.1rem 0.4rem;
+      border-radius: 3px;
+    }
+
+    .preview-mode-switch {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: var(--text-main);
+      background: var(--surface-white);
+      border: 1px solid var(--border-color);
+      padding: 0.3rem 0.65rem;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .preview-mode-switch input {
+      accent-color: var(--green-accent);
+      cursor: pointer;
+    }
+
+    /* Alert / Notification Bar */
+    .notice-bar {
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 0.75rem 1rem;
+      border-radius: 5px;
+      margin-bottom: 1.25rem;
+      font-size: 0.84rem;
+      font-weight: 500;
+      animation: rowReveal 0.2s ease-out;
+    }
+
+    .notice-bar.visible {
+      display: flex;
+    }
+
+    .notice-error {
+      background-color: var(--absent-bg);
+      border: 1px solid var(--absent-border);
+      color: var(--absent-text);
+    }
+
+    .notice-success {
+      background-color: var(--present-bg);
+      border: 1px solid var(--present-border);
+      color: var(--present-text);
+    }
+
+    .notice-dismiss {
+      background: none;
+      border: none;
+      color: inherit;
       font-size: 1.1rem;
+      cursor: pointer;
+      line-height: 1;
+      opacity: 0.75;
     }
 
-    .card p.helper {
-      margin-top: 0;
-      margin-bottom: 1rem;
-      font-size: 0.85rem;
-      color: var(--muted);
+    /* Registrar Summary Metrics Ledger */
+    .metrics-ledger {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      background: var(--surface-white);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      margin-bottom: 1.5rem;
+      overflow: hidden;
     }
 
-    .form-group {
-      margin-bottom: 0.9rem;
+    .metric-cell {
+      padding: 0.9rem 1.15rem;
+      border-right: 1px solid var(--border-color);
+    }
+
+    .metric-cell:last-child {
+      border-right: none;
+    }
+
+    .metric-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-secondary);
+      margin-bottom: 0.25rem;
+    }
+
+    .metric-number {
+      font-family: var(--font-mono);
+      font-size: 1.4rem;
+      font-weight: 600;
+      color: var(--navy-primary);
+      line-height: 1.2;
+    }
+
+    .metric-sub {
+      font-size: 0.72rem;
+      color: var(--text-secondary);
+      margin-top: 0.15rem;
+    }
+
+    /* Two-Column Workspace: Left Controls + Right Data Console */
+    .console-grid {
+      display: grid;
+      grid-template-columns: 350px 1fr;
+      gap: 1.5rem;
+      align-items: start;
+    }
+
+    @media (max-width: 960px) {
+      .console-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .forms-column {
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    .panel {
+      background: var(--surface-white);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    .panel-header {
+      background: var(--surface-muted);
+      border-bottom: 1px solid var(--border-color);
+      padding: 0.75rem 1.1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .panel-title {
+      margin: 0;
+      font-family: var(--font-serif);
+      font-size: 0.98rem;
+      font-weight: 600;
+      color: var(--navy-primary);
+    }
+
+    .endpoint-tag {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      color: var(--text-secondary);
+      background: var(--bg-main);
+      border: 1px solid var(--border-color);
+      padding: 0.1rem 0.42rem;
+      border-radius: 3px;
+    }
+
+    .panel-body {
+      padding: 1.1rem;
+    }
+
+    .panel-desc {
+      margin: 0 0 0.9rem;
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+    }
+
+    .field-group {
+      margin-bottom: 0.85rem;
     }
 
     label {
       display: block;
-      font-size: 0.85rem;
+      font-size: 0.75rem;
       font-weight: 600;
-      margin-bottom: 0.35rem;
+      color: var(--text-main);
+      margin-bottom: 0.3rem;
+      letter-spacing: 0.01em;
     }
 
     input[type="text"],
     input[type="date"],
     select {
       width: 100%;
-      padding: 0.55rem 0.7rem;
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      font-size: 0.925rem;
-      background-color: #fff;
-      color: var(--text);
+      padding: 0.5rem 0.65rem;
+      font-family: var(--font-sans);
+      font-size: 0.84rem;
+      color: var(--text-main);
+      background-color: var(--surface-white);
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
     }
 
     input:focus,
     select:focus {
-      outline: 2px solid #93c5fd;
-      border-color: var(--primary);
+      outline: none;
+      border-color: var(--green-accent);
+      box-shadow: 0 0 0 2px rgba(84, 113, 99, 0.16);
     }
 
-    .btn {
+    .field-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.65rem;
+    }
+
+    .student-history-note {
+      margin-top: 0.35rem;
+      font-family: var(--font-mono);
+      font-size: 0.71rem;
+      color: var(--text-secondary);
+      background: var(--bg-main);
+      padding: 0.35rem 0.5rem;
+      border-radius: 3px;
+      border-left: 2px solid var(--green-accent);
+      display: none;
+    }
+
+    .student-history-note.visible {
+      display: block;
+    }
+
+    .btn-primary {
+      width: 100%;
       display: inline-flex;
       align-items: center;
       justify-content: center;
       gap: 0.4rem;
-      background-color: var(--primary);
-      color: #ffffff;
-      border: none;
-      border-radius: 6px;
-      padding: 0.6rem 1rem;
-      font-size: 0.9rem;
+      background-color: var(--navy-primary);
+      color: #FFFFFF;
+      border: 1px solid var(--navy-primary);
+      border-radius: 4px;
+      padding: 0.55rem 0.9rem;
+      font-family: var(--font-sans);
+      font-size: 0.82rem;
       font-weight: 600;
       cursor: pointer;
+      transition: background-color 0.15s ease;
     }
 
-    .btn:hover:not(:disabled) {
-      background-color: var(--primary-hover);
+    .btn-primary:hover:not(:disabled) {
+      background-color: var(--navy-hover);
     }
 
-    .btn:disabled {
-      opacity: 0.6;
+    .btn-primary:disabled {
+      opacity: 0.55;
       cursor: not-allowed;
     }
 
+    .btn-accent {
+      background-color: var(--green-accent);
+      border-color: var(--green-accent);
+    }
+
+    .btn-accent:hover:not(:disabled) {
+      background-color: var(--green-hover);
+    }
+
     .btn-secondary {
-      background-color: #f1f5f9;
-      color: var(--text);
-      border: 1px solid var(--border);
+      background-color: var(--surface-white);
+      color: var(--text-main);
+      border: 1px solid var(--border-strong);
+      border-radius: 4px;
+      padding: 0.48rem 0.85rem;
+      font-family: var(--font-sans);
+      font-size: 0.8rem;
+      font-weight: 500;
+      cursor: pointer;
     }
 
     .btn-secondary:hover:not(:disabled) {
-      background-color: #e2e8f0;
+      background-color: var(--bg-main);
     }
 
-    .toolbar {
+    /* Data Console Table Area */
+    .console-toolbar {
+      padding: 0.85rem 1.1rem;
+      border-bottom: 1px solid var(--border-color);
       display: flex;
       flex-wrap: wrap;
       justify-content: space-between;
       align-items: center;
       gap: 0.75rem;
-      margin-bottom: 1rem;
+      background: var(--surface-white);
     }
 
-    .toolbar-filters {
+    .section-tabs {
       display: flex;
       flex-wrap: wrap;
-      gap: 0.6rem;
+      gap: 0.35rem;
+    }
+
+    .tab-pill {
+      background: var(--bg-main);
+      border: 1px solid var(--border-color);
+      color: var(--text-secondary);
+      padding: 0.32rem 0.68rem;
+      border-radius: 4px;
+      font-size: 0.76rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .tab-pill:hover {
+      border-color: var(--border-strong);
+      color: var(--text-main);
+    }
+
+    .tab-pill.active {
+      background: var(--navy-primary);
+      border-color: var(--navy-primary);
+      color: #FFFFFF;
+    }
+
+    .toolbar-search {
+      display: flex;
       align-items: center;
+      gap: 0.5rem;
     }
 
-    .toolbar-filters select,
-    .toolbar-filters input {
-      width: auto;
-      min-width: 200px;
+    .toolbar-search input {
+      width: 230px;
+      padding: 0.38rem 0.65rem;
+      font-size: 0.8rem;
     }
 
-    .table-wrapper {
+    .table-scroll {
       overflow-x: auto;
     }
 
     table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 0.9rem;
+      font-size: 0.84rem;
     }
 
     th,
     td {
       text-align: left;
-      padding: 0.75rem 0.85rem;
-      border-bottom: 1px solid var(--border);
-      vertical-align: top;
+      padding: 0.75rem 0.9rem;
+      border-bottom: 1px solid var(--border-color);
+      vertical-align: middle;
     }
 
     th {
-      background-color: #f8fafc;
+      background-color: var(--surface-muted);
+      color: var(--text-secondary);
+      font-size: 0.7rem;
       font-weight: 600;
-      color: var(--muted);
-      font-size: 0.8rem;
       text-transform: uppercase;
-      letter-spacing: 0.03em;
+      letter-spacing: 0.06em;
+      white-space: nowrap;
     }
 
-    .attendance-list {
+    tbody tr {
+      transition: background-color 0.12s ease;
+    }
+
+    tbody tr.row-enter {
+      animation: rowReveal 0.26s ease-out both;
+    }
+
+    tbody tr:hover {
+      background-color: #F9FAF7;
+    }
+
+    .col-index {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--text-secondary);
+      width: 42px;
+    }
+
+    .student-cell-name {
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    .subject-cell {
+      color: var(--text-main);
+    }
+
+    .section-code {
+      font-family: var(--font-mono);
+      font-size: 0.74rem;
+      font-weight: 500;
+      color: var(--navy-primary);
+      background: var(--navy-subtle);
+      padding: 0.16rem 0.48rem;
+      border-radius: 3px;
+      white-space: nowrap;
+      display: inline-block;
+    }
+
+    .dates-container {
       display: flex;
       flex-wrap: wrap;
-      gap: 0.4rem;
+      gap: 0.38rem;
     }
 
-    .pill {
+    .status-chip {
       display: inline-flex;
       align-items: center;
-      gap: 0.3rem;
-      padding: 0.2rem 0.55rem;
-      border-radius: 999px;
-      font-size: 0.78rem;
+      gap: 0.35rem;
+      padding: 0.16rem 0.52rem;
+      border-radius: 3px;
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      font-weight: 500;
+      border: 1px solid transparent;
+    }
+
+    .chip-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+    }
+
+    .chip-present {
+      background-color: var(--present-bg);
+      border-color: var(--present-border);
+      color: var(--present-text);
+    }
+    .chip-present .chip-dot { background-color: var(--present-dot); }
+
+    .chip-late {
+      background-color: var(--late-bg);
+      border-color: var(--late-border);
+      color: var(--late-text);
+    }
+    .chip-late .chip-dot { background-color: var(--late-dot); }
+
+    .chip-absent {
+      background-color: var(--absent-bg);
+      border-color: var(--absent-border);
+      color: var(--absent-text);
+    }
+    .chip-absent .chip-dot { background-color: var(--absent-dot); }
+
+    .chip-staged {
+      animation: pulseOutline 1.5s infinite;
       font-weight: 600;
     }
 
-    .pill-present {
-      background-color: var(--present-bg);
-      color: var(--present-text);
-    }
-
-    .pill-absent {
-      background-color: var(--absent-bg);
-      color: var(--absent-text);
-    }
-
-    .pill-late {
-      background-color: var(--late-bg);
-      color: var(--late-text);
-    }
-
-    .empty-dates {
-      color: var(--muted);
+    .no-dates {
+      font-family: var(--font-mono);
+      font-size: 0.74rem;
+      color: var(--text-secondary);
       font-style: italic;
-      font-size: 0.85rem;
     }
 
-    .status-state {
+    .state-placeholder {
       text-align: center;
-      padding: 2rem 1rem;
-      color: var(--muted);
+      padding: 3rem 1.25rem;
+      color: var(--text-secondary);
+      font-size: 0.86rem;
     }
 
-    .existing-dates-hint {
-      margin-top: 0.35rem;
-      font-size: 0.8rem;
-      color: var(--muted);
+    .console-footer {
+      padding: 0.7rem 1.1rem;
+      background: var(--surface-muted);
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+    }
+
+    /* Before/After Staged Change Verification Modal */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      background: rgba(32, 54, 73, 0.48);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+
+    .modal-overlay.open {
+      display: flex;
+    }
+
+    .modal-dialog {
+      background: var(--surface-white);
+      border: 1px solid var(--border-color);
+      border-top: 4px solid var(--navy-primary);
+      border-radius: 6px;
+      max-width: 520px;
+      width: 100%;
+      box-shadow: 0 18px 36px rgba(32, 54, 73, 0.22);
+      animation: modalFadeIn 0.2s ease-out;
+      overflow: hidden;
+    }
+
+    .modal-header {
+      padding: 1rem 1.25rem 0.75rem;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .modal-kicker {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--green-accent);
+      font-weight: 600;
+    }
+
+    .modal-title {
+      margin: 0.15rem 0 0;
+      font-family: var(--font-serif);
+      font-size: 1.1rem;
+      color: var(--navy-primary);
+    }
+
+    .modal-body {
+      padding: 1.1rem 1.25rem;
+    }
+
+    .modal-desc {
+      margin: 0 0 0.85rem;
+      font-size: 0.82rem;
+      color: var(--text-secondary);
+    }
+
+    .ledger-preview-table {
+      background: var(--bg-main);
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      padding: 0.75rem 0.9rem;
+    }
+
+    .ledger-preview-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 1rem;
+      padding: 0.42rem 0;
+      border-bottom: 1px solid var(--border-color);
+      font-size: 0.82rem;
+    }
+
+    .ledger-preview-row:last-child {
+      border-bottom: none;
+    }
+
+    .ledger-preview-label {
+      color: var(--text-secondary);
+      font-weight: 500;
+      flex-shrink: 0;
+    }
+
+    .ledger-preview-value {
+      font-weight: 600;
+      color: var(--text-main);
+      text-align: right;
+    }
+
+    .modal-footer {
+      padding: 0.85rem 1.25rem;
+      background: var(--surface-muted);
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.6rem;
     }
   </style>
 </head>
 <body>
-  <header>
-    <div class="header-inner">
-      <div>
-        <h1>Student Laboratory Attendance System</h1>
-        <p class="subtitle">Database: <strong>LabAttendanceDBBAUTISTA</strong> &bull; Collection: <strong>daily_attendance</strong></p>
+  <!-- University Registrar Header -->
+  <header class="registrar-topbar">
+    <div class="topbar-inner">
+      <div class="institution-identity">
+        <div class="crest-box" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 3L2 8l10 5 10-5-10-5z" />
+            <path d="M6 10.5v5.5c0 2 2.7 3.5 6 3.5s6-1.5 6-3.5v-5.5" />
+          </svg>
+        </div>
+        <div>
+          <div class="institution-kicker">Office of the University Registrar &bull; Academic Records Division</div>
+          <h1 class="institution-title">Laboratory Attendance Management Console</h1>
+        </div>
       </div>
-      <div class="badge-endpoint" id="apiUrlBadge"></div>
+
+      <div class="topbar-controls">
+        <div class="db-telemetry" title="Connected to MongoDB Atlas via Vercel Serverless Functions">
+          <span class="telemetry-dot"></span>
+          <span id="syncStatusText">Connecting...</span>
+        </div>
+        <button type="button" class="btn-header-refresh" id="refreshBtn" title="Refresh records from MongoDB Atlas without reloading the browser">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+            <path d="M3 3v5h5" />
+            <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16" />
+            <path d="M16 16h5v5" />
+          </svg>
+          <span id="refreshBtnLabel">Refresh Ledger</span>
+        </button>
+      </div>
     </div>
   </header>
 
-  <main class="container">
-    <div id="statusBanner" class="alert" role="status" aria-live="polite"></div>
-
-    <div class="grid-forms">
-      <!-- Form 1: Create New Student Document (POST /api) -->
-      <section class="card" aria-labelledby="addStudentHeading">
-        <h2 id="addStudentHeading">1. Add New Student Record</h2>
-        <p class="helper">Creates a new student document in <code>daily_attendance</code> via <code>POST /api</code>.</p>
-        <form id="createStudentForm" novalidate>
-          <div class="form-group">
-            <label for="studentNameInput">Student Name *</label>
-            <input type="text" id="studentNameInput" name="studentName" placeholder="e.g., Dexter Morgan" required />
-          </div>
-          <div class="form-group">
-            <label for="subjectNameInput">Subject Name *</label>
-            <input type="text" id="subjectNameInput" name="subjectName" list="subjectSuggestions" placeholder="e.g., Network Administration" required />
-            <datalist id="subjectSuggestions">
-              <option value="Network Administration"></option>
-              <option value="Object-Oriented Programming"></option>
-              <option value="Microprocessor Systems"></option>
-            </datalist>
-          </div>
-          <div class="form-group">
-            <label for="sectionInput">Section *</label>
-            <input type="text" id="sectionInput" name="section" list="sectionSuggestions" placeholder="e.g., BSIT-3A 9332-AY226" required />
-            <datalist id="sectionSuggestions">
-              <option value="BSIT-3A 9332-AY226"></option>
-              <option value="BSCS-2B 9487-AY226"></option>
-              <option value="BSCpE-4C 9105-AY226"></option>
-            </datalist>
-          </div>
-          <button type="submit" class="btn" id="createStudentBtn">Create Student Record</button>
-        </form>
-      </section>
-
-      <!-- Form 2: Add Attendance Date to Existing Student (POST /api/attendance) -->
-      <section class="card" aria-labelledby="addAttendanceHeading">
-        <h2 id="addAttendanceHeading">2. Record Laboratory Attendance Date</h2>
-        <p class="helper">Appends an attendance entry to an existing student via <code>POST /api/attendance</code>.</p>
-        <form id="addAttendanceForm" novalidate>
-          <div class="form-group">
-            <label for="studentSelect">Select Student *</label>
-            <select id="studentSelect" name="studentId" required>
-              <option value="">-- Loading students... --</option>
-            </select>
-            <div class="existing-dates-hint" id="selectedStudentDatesHint"></div>
-          </div>
-          <div class="form-group">
-            <label for="attendanceDateInput">Attendance Date (YYYY-MM-DD) *</label>
-            <input type="date" id="attendanceDateInput" name="date" required />
-          </div>
-          <div class="form-group">
-            <label for="attendanceStatusSelect">Attendance Status *</label>
-            <select id="attendanceStatusSelect" name="status" required>
-              <option value="Present">Present</option>
-              <option value="Late">Late</option>
-              <option value="Absent">Absent</option>
-            </select>
-          </div>
-          <button type="submit" class="btn" id="addAttendanceBtn">Add Attendance Entry</button>
-        </form>
-      </section>
+  <main class="console-wrapper">
+    <!-- Database & Collection Context Bar -->
+    <div class="context-strip">
+      <div class="context-meta">
+        <span>Database: <code class="mono-code">LabAttendanceDBBAUTISTA</code></span>
+        <span>Collection: <code class="mono-code">daily_attendance</code></span>
+        <span>API Gateway: <code class="mono-code">student-api-backend-fawn.vercel.app</code></span>
+      </div>
+      <label class="preview-mode-switch" for="stageChangesToggle">
+        <input type="checkbox" id="stageChangesToggle" checked />
+        <span>Review changes before committing to MongoDB</span>
+      </label>
     </div>
 
-    <!-- Attendance Records Table -->
-    <section class="card" aria-labelledby="recordsHeading">
-      <div class="toolbar">
-        <div>
-          <h2 id="recordsHeading" style="margin-bottom: 0.15rem;">Attendance Records (<span id="recordCount">0</span>)</h2>
-          <p class="helper" style="margin-bottom: 0;">Live records retrieved from MongoDB Atlas via Vercel Serverless API.</p>
-        </div>
-        <div class="toolbar-filters">
-          <select id="sectionFilter" aria-label="Filter by Section">
-            <option value="ALL">All Sections / Subjects</option>
-          </select>
-          <input type="text" id="searchInput" placeholder="Search student name..." aria-label="Search student name" />
-          <button type="button" class="btn btn-secondary" id="refreshBtn">Refresh Records</button>
-        </div>
+    <!-- Status / Error Alert Banner -->
+    <div id="noticeBanner" class="notice-bar" role="status" aria-live="polite">
+      <span id="noticeText"></span>
+      <button type="button" class="notice-dismiss" id="noticeCloseBtn" aria-label="Close alert">&times;</button>
+    </div>
+
+    <!-- Summary Metrics Bar -->
+    <section class="metrics-ledger" aria-label="Attendance Summary Metrics">
+      <div class="metric-cell">
+        <div class="metric-label">Enrolled Students</div>
+        <div class="metric-number" id="metricStudents">0</div>
+        <div class="metric-sub">Active roster documents</div>
       </div>
-
-      <div id="loadingIndicator" class="status-state">Loading attendance records from MongoDB Atlas...</div>
-      <div id="emptyIndicator" class="status-state" style="display: none;">No attendance records match your current view.</div>
-
-      <div class="table-wrapper" id="tableWrapper" style="display: none;">
-        <table>
-          <thead>
-            <tr>
-              <th>Student Name</th>
-              <th>Subject</th>
-              <th>Section</th>
-              <th>Attendance Dates &amp; Statuses</th>
-            </tr>
-          </thead>
-          <tbody id="recordsTableBody"></tbody>
-        </table>
+      <div class="metric-cell">
+        <div class="metric-label">Present Logs</div>
+        <div class="metric-number" id="metricPresent" style="color: var(--present-text);">0</div>
+        <div class="metric-sub">Verified on-time sessions</div>
+      </div>
+      <div class="metric-cell">
+        <div class="metric-label">Late Logs</div>
+        <div class="metric-number" id="metricLate" style="color: var(--late-text);">0</div>
+        <div class="metric-sub">Tardy arrival sessions</div>
+      </div>
+      <div class="metric-cell">
+        <div class="metric-label">Absent Logs</div>
+        <div class="metric-number" id="metricAbsent" style="color: var(--absent-text);">0</div>
+        <div class="metric-sub">Unexcused/missed sessions</div>
+      </div>
+      <div class="metric-cell">
+        <div class="metric-label">Attendance Rate</div>
+        <div class="metric-number" id="metricRate">0%</div>
+        <div class="metric-sub">Present + Late / Total logs</div>
       </div>
     </section>
+
+    <!-- Main Split Console -->
+    <div class="console-grid">
+      <!-- Left Column: Registrar Forms -->
+      <aside class="forms-column">
+        <!-- Form 1: Record Laboratory Attendance Date (POST /api/attendance) -->
+        <section class="panel" aria-labelledby="formAttendanceHeading">
+          <div class="panel-header">
+            <h2 class="panel-title" id="formAttendanceHeading">Record Session Attendance</h2>
+            <span class="endpoint-tag">POST /api/attendance</span>
+          </div>
+          <div class="panel-body">
+            <p class="panel-desc">Select an enrolled student and append a laboratory session date to their official record.</p>
+            <form id="addAttendanceForm" novalidate>
+              <div class="field-group">
+                <label for="studentSelect">Enrolled Student *</label>
+                <select id="studentSelect" name="studentId" required>
+                  <option value="">-- Loading roster... --</option>
+                </select>
+                <div class="student-history-note" id="selectedStudentDatesHint"></div>
+              </div>
+              <div class="field-row">
+                <div class="field-group">
+                  <label for="attendanceDateInput">Session Date *</label>
+                  <input type="date" id="attendanceDateInput" name="date" required />
+                </div>
+                <div class="field-group">
+                  <label for="attendanceStatusSelect">Mark Status *</label>
+                  <select id="attendanceStatusSelect" name="status" required>
+                    <option value="Present">Present</option>
+                    <option value="Late">Late</option>
+                    <option value="Absent">Absent</option>
+                  </select>
+                </div>
+              </div>
+              <button type="submit" class="btn-primary btn-accent" id="addAttendanceBtn">
+                Record Attendance Entry
+              </button>
+            </form>
+          </div>
+        </section>
+
+        <!-- Form 2: Enroll New Student Record (POST /api) -->
+        <section class="panel" aria-labelledby="formStudentHeading">
+          <div class="panel-header">
+            <h2 class="panel-title" id="formStudentHeading">Register New Student</h2>
+            <span class="endpoint-tag">POST /api</span>
+          </div>
+          <div class="panel-body">
+            <p class="panel-desc">Add a new student document to the <code class="mono-code">daily_attendance</code> collection.</p>
+            <form id="createStudentForm" novalidate>
+              <div class="field-group">
+                <label for="studentNameInput">Student Full Name *</label>
+                <input type="text" id="studentNameInput" name="studentName" placeholder="e.g., Dexter Morgan" required />
+              </div>
+              <div class="field-group">
+                <label for="subjectNameInput">Course / Subject Title *</label>
+                <input type="text" id="subjectNameInput" name="subjectName" list="subjectSuggestions" placeholder="e.g., Network Administration" required />
+                <datalist id="subjectSuggestions">
+                  <option value="Network Administration"></option>
+                  <option value="Object-Oriented Programming"></option>
+                  <option value="Microprocessor Systems"></option>
+                </datalist>
+              </div>
+              <div class="field-group">
+                <label for="sectionInput">Section &amp; Academic Year Code *</label>
+                <input type="text" id="sectionInput" name="section" list="sectionSuggestions" placeholder="e.g., BSIT-3A 9332-AY226" required />
+                <datalist id="sectionSuggestions">
+                  <option value="BSIT-3A 9332-AY226"></option>
+                  <option value="BSCS-2B 9487-AY226"></option>
+                  <option value="BSCpE-4C 9105-AY226"></option>
+                </datalist>
+              </div>
+              <button type="submit" class="btn-primary" id="createStudentBtn">
+                Register Student in Roster
+              </button>
+            </form>
+          </div>
+        </section>
+      </aside>
+
+      <!-- Right Column: Minimal Data Console Table -->
+      <section class="panel" aria-labelledby="ledgerHeading">
+        <div class="panel-header">
+          <h2 class="panel-title" id="ledgerHeading">Official Laboratory Attendance Roster (<span id="visibleCount">0</span>)</h2>
+          <span class="endpoint-tag">GET /api</span>
+        </div>
+
+        <div class="console-toolbar">
+          <div class="section-tabs" id="sectionTabs" role="tablist" aria-label="Filter by Section">
+            <button type="button" class="tab-pill active" data-section="ALL">All Sections</button>
+          </div>
+          <div class="toolbar-search">
+            <input type="text" id="searchInput" placeholder="Search name, subject, section, date..." aria-label="Search roster" />
+          </div>
+        </div>
+
+        <div id="loadingIndicator" class="state-placeholder">
+          Retrieving attendance ledger from MongoDB Atlas...
+        </div>
+        <div id="emptyIndicator" class="state-placeholder" style="display: none;">
+          No student attendance records match the current filter criteria.
+        </div>
+
+        <div class="table-scroll" id="tableWrapper" style="display: none;">
+          <table>
+            <thead>
+              <tr>
+                <th class="col-index">#</th>
+                <th>Student Name</th>
+                <th>Subject</th>
+                <th>Section</th>
+                <th>Session Attendance Log (YYYY-MM-DD)</th>
+              </tr>
+            </thead>
+            <tbody id="recordsTableBody"></tbody>
+          </table>
+        </div>
+
+        <div class="console-footer">
+          <span>Showing <strong id="footerCount">0</strong> of <strong id="footerTotal">0</strong> records in <code class="mono-code">daily_attendance</code></span>
+          <span id="lastSyncedFooter">Awaiting synchronization...</span>
+        </div>
+      </section>
+    </div>
   </main>
+
+  <!-- Staged Change Preview Modal (Before Permanent MongoDB Write) -->
+  <div class="modal-overlay" id="previewModal" role="dialog" aria-modal="true" aria-labelledby="previewModalTitle">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div class="modal-kicker">Registrar Verification Step</div>
+        <h3 class="modal-title" id="previewModalTitle">Confirm Database Record Update</h3>
+      </div>
+      <div class="modal-body">
+        <p class="modal-desc" id="previewModalSubtitle">
+          Verify the staged record details below before committing permanently to MongoDB Atlas.
+        </p>
+        <div class="ledger-preview-table" id="previewModalContent"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" id="cancelPreviewBtn">Return &amp; Edit</button>
+        <button type="button" class="btn-primary btn-accent" id="confirmPreviewBtn" style="width: auto;">
+          Confirm &amp; Commit to MongoDB
+        </button>
+      </div>
+    </div>
+  </div>
 
   <script>
     const API_BASE_URL = 'https://student-api-backend-fawn.vercel.app';
 
     let allRecords = [];
+    let activeSectionFilter = 'ALL';
+    let pendingConfirmCallback = null;
 
-    const apiUrlBadge = document.getElementById('apiUrlBadge');
-    const statusBanner = document.getElementById('statusBanner');
+    const syncStatusText = document.getElementById('syncStatusText');
+    const refreshBtn = document.getElementById('refreshBtn');
+    const refreshBtnLabel = document.getElementById('refreshBtnLabel');
+
+    const noticeBanner = document.getElementById('noticeBanner');
+    const noticeText = document.getElementById('noticeText');
+    const noticeCloseBtn = document.getElementById('noticeCloseBtn');
+
+    const metricStudents = document.getElementById('metricStudents');
+    const metricPresent = document.getElementById('metricPresent');
+    const metricLate = document.getElementById('metricLate');
+    const metricAbsent = document.getElementById('metricAbsent');
+    const metricRate = document.getElementById('metricRate');
+
+    const stageChangesToggle = document.getElementById('stageChangesToggle');
+    const previewModal = document.getElementById('previewModal');
+    const previewModalTitle = document.getElementById('previewModalTitle');
+    const previewModalSubtitle = document.getElementById('previewModalSubtitle');
+    const previewModalContent = document.getElementById('previewModalContent');
+    const cancelPreviewBtn = document.getElementById('cancelPreviewBtn');
+    const confirmPreviewBtn = document.getElementById('confirmPreviewBtn');
+
     const createStudentForm = document.getElementById('createStudentForm');
     const createStudentBtn = document.getElementById('createStudentBtn');
     const studentNameInput = document.getElementById('studentNameInput');
@@ -426,26 +1102,28 @@
     const attendanceDateInput = document.getElementById('attendanceDateInput');
     const attendanceStatusSelect = document.getElementById('attendanceStatusSelect');
 
-    const recordCount = document.getElementById('recordCount');
-    const sectionFilter = document.getElementById('sectionFilter');
+    const visibleCount = document.getElementById('visibleCount');
+    const footerCount = document.getElementById('footerCount');
+    const footerTotal = document.getElementById('footerTotal');
+    const lastSyncedFooter = document.getElementById('lastSyncedFooter');
+    const sectionTabs = document.getElementById('sectionTabs');
     const searchInput = document.getElementById('searchInput');
-    const refreshBtn = document.getElementById('refreshBtn');
     const loadingIndicator = document.getElementById('loadingIndicator');
     const emptyIndicator = document.getElementById('emptyIndicator');
     const tableWrapper = document.getElementById('tableWrapper');
     const recordsTableBody = document.getElementById('recordsTableBody');
 
-    apiUrlBadge.textContent = `API: ${API_BASE_URL}/api`;
-
-    function showBanner(message, type) {
-      statusBanner.textContent = message;
-      statusBanner.className = `alert visible ${type === 'error' ? 'alert-error' : 'alert-success'}`;
+    function showNotice(message, type) {
+      noticeText.textContent = message;
+      noticeBanner.className = `notice-bar visible ${type === 'error' ? 'notice-error' : 'notice-success'}`;
     }
 
-    function clearBanner() {
-      statusBanner.textContent = '';
-      statusBanner.className = 'alert';
+    function clearNotice() {
+      noticeText.textContent = '';
+      noticeBanner.className = 'notice-bar';
     }
+
+    noticeCloseBtn.addEventListener('click', clearNotice);
 
     function normalizeAttendanceEntry(entry) {
       if (typeof entry === 'string') {
@@ -457,91 +1135,158 @@
       };
     }
 
+    function buildStatusChip(dateStr, statusStr, isStaged = false) {
+      const chip = document.createElement('span');
+      const lower = statusStr.toLowerCase();
+      let variant = 'chip-present';
+      if (lower === 'late') variant = 'chip-late';
+      else if (lower === 'absent') variant = 'chip-absent';
+
+      chip.className = `status-chip ${variant} ${isStaged ? 'chip-staged' : ''}`;
+
+      const dot = document.createElement('span');
+      dot.className = 'chip-dot';
+      chip.appendChild(dot);
+
+      const label = document.createElement('span');
+      label.textContent = isStaged
+        ? `+ NEW ${dateStr} · ${statusStr}`
+        : `${dateStr} · ${statusStr}`;
+      chip.appendChild(label);
+
+      return chip;
+    }
+
+    function updateMetrics() {
+      let present = 0;
+      let late = 0;
+      let absent = 0;
+
+      for (const rec of allRecords) {
+        const list = Array.isArray(rec.attendanceDates) ? rec.attendanceDates : [];
+        for (const raw of list) {
+          const { status } = normalizeAttendanceEntry(raw);
+          if (status === 'Present') present++;
+          else if (status === 'Late') late++;
+          else if (status === 'Absent') absent++;
+        }
+      }
+
+      const totalLogs = present + late + absent;
+      const rate = totalLogs > 0 ? Math.round(((present + late) / totalLogs) * 100) : 0;
+
+      metricStudents.textContent = String(allRecords.length);
+      metricPresent.textContent = String(present);
+      metricLate.textContent = String(late);
+      metricAbsent.textContent = String(absent);
+      metricRate.textContent = `${rate}%`;
+    }
+
     function updateSelectedStudentHint() {
       const selectedId = studentSelect.value;
       if (!selectedId) {
         selectedStudentDatesHint.textContent = '';
+        selectedStudentDatesHint.className = 'student-history-note';
         return;
       }
       const student = allRecords.find((r) => String(r._id) === selectedId);
       if (!student) {
         selectedStudentDatesHint.textContent = '';
+        selectedStudentDatesHint.className = 'student-history-note';
         return;
       }
       const dates = Array.isArray(student.attendanceDates)
         ? student.attendanceDates.map((d) => normalizeAttendanceEntry(d).date).filter(Boolean)
         : [];
-      if (dates.length === 0) {
-        selectedStudentDatesHint.textContent = 'Recorded dates for this student: None yet.';
-      } else {
-        selectedStudentDatesHint.textContent = `Already recorded dates: ${dates.join(', ')}`;
-      }
+      selectedStudentDatesHint.textContent =
+        dates.length === 0
+          ? 'Existing log: No session dates recorded yet.'
+          : `Existing dates (${dates.length}): ${dates.join(', ')}`;
+      selectedStudentDatesHint.className = 'student-history-note visible';
     }
 
-    function populateStudentDropdown(preserveSelectedId) {
-      const previousId = preserveSelectedId || studentSelect.value;
+    function populateStudentSelect(preserveId) {
+      const currentId = preserveId || studentSelect.value;
       studentSelect.replaceChildren();
 
-      const placeholder = document.createElement('option');
-      placeholder.value = '';
-      placeholder.textContent = allRecords.length
-        ? '-- Select a student --'
-        : '-- No students available --';
-      studentSelect.appendChild(placeholder);
+      const defaultOpt = document.createElement('option');
+      defaultOpt.value = '';
+      defaultOpt.textContent = allRecords.length
+        ? '-- Select student from roster --'
+        : '-- Roster empty --';
+      studentSelect.appendChild(defaultOpt);
 
       for (const rec of allRecords) {
-        const option = document.createElement('option');
-        option.value = String(rec._id);
-        option.textContent = `${rec.studentName} — ${rec.section} (${rec.subjectName})`;
-        studentSelect.appendChild(option);
+        const opt = document.createElement('option');
+        opt.value = String(rec._id);
+        opt.textContent = `${rec.studentName} — ${rec.section}`;
+        studentSelect.appendChild(opt);
       }
 
-      if (previousId && allRecords.some((r) => String(r._id) === previousId)) {
-        studentSelect.value = previousId;
+      if (currentId && allRecords.some((r) => String(r._id) === currentId)) {
+        studentSelect.value = currentId;
       }
       updateSelectedStudentHint();
     }
 
-    function populateSectionFilter() {
-      const currentVal = sectionFilter.value;
-      const sections = Array.from(
-        new Set(allRecords.map((r) => `${r.section} | ${r.subjectName}`))
-      ).sort();
-
-      sectionFilter.replaceChildren();
-      const allOpt = document.createElement('option');
-      allOpt.value = 'ALL';
-      allOpt.textContent = 'All Sections / Subjects';
-      sectionFilter.appendChild(allOpt);
-
-      for (const item of sections) {
-        const opt = document.createElement('option');
-        opt.value = item;
-        opt.textContent = item;
-        sectionFilter.appendChild(opt);
+    function populateSectionTabs() {
+      const sections = Array.from(new Set(allRecords.map((r) => r.section).filter(Boolean))).sort();
+      if (activeSectionFilter !== 'ALL' && !sections.includes(activeSectionFilter)) {
+        activeSectionFilter = 'ALL';
       }
 
-      if (sections.includes(currentVal)) {
-        sectionFilter.value = currentVal;
+      sectionTabs.replaceChildren();
+
+      const allBtn = document.createElement('button');
+      allBtn.type = 'button';
+      allBtn.className = `tab-pill ${activeSectionFilter === 'ALL' ? 'active' : ''}`;
+      allBtn.textContent = `All Sections (${allRecords.length})`;
+      allBtn.addEventListener('click', () => {
+        activeSectionFilter = 'ALL';
+        populateSectionTabs();
+        renderTable();
+      });
+      sectionTabs.appendChild(allBtn);
+
+      for (const sec of sections) {
+        const count = allRecords.filter((r) => r.section === sec).length;
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = `tab-pill ${activeSectionFilter === sec ? 'active' : ''}`;
+        btn.textContent = `${sec.split(' ')[0]} (${count})`;
+        btn.title = sec;
+        btn.addEventListener('click', () => {
+          activeSectionFilter = sec;
+          populateSectionTabs();
+          renderTable();
+        });
+        sectionTabs.appendChild(btn);
       }
     }
 
     function renderTable() {
-      const filterVal = sectionFilter.value;
       const query = searchInput.value.trim().toLowerCase();
 
       const filtered = allRecords.filter((rec) => {
-        const matchesSection =
-          filterVal === 'ALL' || `${rec.section} | ${rec.subjectName}` === filterVal;
-        const matchesSearch =
+        const matchesSection = activeSectionFilter === 'ALL' || rec.section === activeSectionFilter;
+        const datesText = Array.isArray(rec.attendanceDates)
+          ? rec.attendanceDates
+              .map((d) => `${normalizeAttendanceEntry(d).date} ${normalizeAttendanceEntry(d).status}`)
+              .join(' ')
+              .toLowerCase()
+          : '';
+        const matchesQuery =
           !query ||
           String(rec.studentName || '').toLowerCase().includes(query) ||
           String(rec.subjectName || '').toLowerCase().includes(query) ||
-          String(rec.section || '').toLowerCase().includes(query);
-        return matchesSection && matchesSearch;
+          String(rec.section || '').toLowerCase().includes(query) ||
+          datesText.includes(query);
+        return matchesSection && matchesQuery;
       });
 
-      recordCount.textContent = String(filtered.length);
+      visibleCount.textContent = String(filtered.length);
+      footerCount.textContent = String(filtered.length);
+      footerTotal.textContent = String(allRecords.length);
       recordsTableBody.replaceChildren();
 
       if (filtered.length === 0) {
@@ -553,69 +1298,78 @@
       emptyIndicator.style.display = 'none';
       tableWrapper.style.display = 'block';
 
-      for (const rec of filtered) {
+      filtered.forEach((rec, index) => {
         const tr = document.createElement('tr');
+        tr.className = 'row-enter';
+        tr.style.animationDelay = `${Math.min(index * 20, 220)}ms`;
+
+        const tdIndex = document.createElement('td');
+        tdIndex.className = 'col-index';
+        tdIndex.textContent = String(index + 1).padStart(2, '0');
 
         const tdName = document.createElement('td');
-        const nameStrong = document.createElement('strong');
-        nameStrong.textContent = rec.studentName || '';
-        tdName.appendChild(nameStrong);
+        const nameSpan = document.createElement('span');
+        nameSpan.className = 'student-cell-name';
+        nameSpan.textContent = rec.studentName || '';
+        tdName.appendChild(nameSpan);
 
         const tdSubject = document.createElement('td');
+        tdSubject.className = 'subject-cell';
         tdSubject.textContent = rec.subjectName || '';
 
         const tdSection = document.createElement('td');
-        tdSection.textContent = rec.section || '';
+        const secSpan = document.createElement('span');
+        secSpan.className = 'section-code';
+        secSpan.textContent = rec.section || '';
+        tdSection.appendChild(secSpan);
 
         const tdDates = document.createElement('td');
         const rawDates = Array.isArray(rec.attendanceDates) ? rec.attendanceDates : [];
 
         if (rawDates.length === 0) {
-          const emptySpan = document.createElement('span');
-          emptySpan.className = 'empty-dates';
-          emptySpan.textContent = 'No attendance dates recorded';
-          tdDates.appendChild(emptySpan);
+          const noneSpan = document.createElement('span');
+          noneSpan.className = 'no-dates';
+          noneSpan.textContent = 'No attendance sessions recorded';
+          tdDates.appendChild(noneSpan);
         } else {
-          const listDiv = document.createElement('div');
-          listDiv.className = 'attendance-list';
+          const wrap = document.createElement('div');
+          wrap.className = 'dates-container';
 
-          const sortedDates = rawDates
+          const sorted = rawDates
             .map(normalizeAttendanceEntry)
             .sort((a, b) => a.date.localeCompare(b.date));
 
-          for (const entry of sortedDates) {
-            const pill = document.createElement('span');
-            const statusLower = entry.status.toLowerCase();
-            let statusClass = 'pill-present';
-            if (statusLower === 'absent') statusClass = 'pill-absent';
-            else if (statusLower === 'late') statusClass = 'pill-late';
-
-            pill.className = `pill ${statusClass}`;
-            pill.textContent = `${entry.date}: ${entry.status}`;
-            listDiv.appendChild(pill);
+          for (const item of sorted) {
+            wrap.appendChild(buildStatusChip(item.date, item.status, false));
           }
 
-          tdDates.appendChild(listDiv);
+          tdDates.appendChild(wrap);
         }
 
+        tr.appendChild(tdIndex);
         tr.appendChild(tdName);
         tr.appendChild(tdSubject);
         tr.appendChild(tdSection);
         tr.appendChild(tdDates);
         recordsTableBody.appendChild(tr);
-      }
+      });
     }
 
     async function loadAttendanceRecords(options = {}) {
-      const { silentBanner = false, preserveStudentId = null } = options;
-      if (!silentBanner) {
-        clearBanner();
+      const { silentNotice = false, preserveStudentId = null, manualRefresh = false } = options;
+      if (!silentNotice) {
+        clearNotice();
       }
 
-      loadingIndicator.style.display = 'block';
-      emptyIndicator.style.display = 'none';
-      tableWrapper.style.display = 'none';
       refreshBtn.disabled = true;
+      refreshBtn.classList.add('spinning');
+      refreshBtnLabel.textContent = 'Syncing...';
+
+      if (allRecords.length === 0) {
+        loadingIndicator.style.display = 'block';
+        emptyIndicator.style.display = 'none';
+        tableWrapper.style.display = 'none';
+      }
 
       try {
         const response = await fetch(`${API_BASE_URL}/api`, {
@@ -626,46 +1380,97 @@
         const data = await response.json().catch(() => null);
 
         if (!response.ok) {
-          const errMsg =
+          const msg =
             (data && (data.error || data.details)) ||
-            `Failed to load records (HTTP ${response.status}).`;
-          throw new Error(errMsg);
+            `Server returned HTTP ${response.status}.`;
+          throw new Error(msg);
         }
 
         if (!Array.isArray(data)) {
-          throw new Error('Unexpected response format from GET /api.');
+          throw new Error('Invalid response payload from GET /api.');
         }
 
         allRecords = data;
-        populateSectionFilter();
-        populateStudentDropdown(preserveStudentId);
+        updateMetrics();
+        populateSectionTabs();
+        populateStudentSelect(preserveStudentId);
         loadingIndicator.style.display = 'none';
         renderTable();
+
+        const timeStr = new Date().toLocaleTimeString([], {
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+        });
+        syncStatusText.textContent = `Atlas Live · ${timeStr}`;
+        lastSyncedFooter.textContent = `Last synchronized with MongoDB Atlas at ${timeStr}`;
+
+        if (manualRefresh) {
+          showNotice(`Synchronized ${allRecords.length} student records from LabAttendanceDBBAUTISTA.daily_attendance.`, 'success');
+        }
       } catch (error) {
         loadingIndicator.style.display = 'none';
         emptyIndicator.style.display = 'block';
-        emptyIndicator.textContent = 'Unable to load records from the API.';
-        showBanner(`Error loading attendance records: ${error.message}`, 'error');
+        emptyIndicator.textContent = 'Unable to retrieve records from the API server.';
+        syncStatusText.textContent = 'Connection Error';
+        showNotice(`Failed to load attendance ledger: ${error.message}`, 'error');
       } finally {
         refreshBtn.disabled = false;
+        refreshBtn.classList.remove('spinning');
+        refreshBtnLabel.textContent = 'Refresh Ledger';
       }
     }
 
-    createStudentForm.addEventListener('submit', async (event) => {
-      event.preventDefault();
-      clearBanner();
+    function openPreviewModal(title, subtitle, rows, onConfirm) {
+      previewModalTitle.textContent = title;
+      previewModalSubtitle.textContent = subtitle;
+      previewModalContent.replaceChildren();
 
-      const studentName = studentNameInput.value.trim();
-      const subjectName = subjectNameInput.value.trim();
-      const section = sectionInput.value.trim();
+      for (const row of rows) {
+        const line = document.createElement('div');
+        line.className = 'ledger-preview-row';
 
-      if (!studentName || !subjectName || !section) {
-        showBanner('Validation Error: Please fill in Student Name, Subject Name, and Section.', 'error');
-        return;
+        const labelEl = document.createElement('span');
+        labelEl.className = 'ledger-preview-label';
+        labelEl.textContent = row.label;
+
+        const valueEl = document.createElement('div');
+        valueEl.className = 'ledger-preview-value';
+        if (row.node) {
+          valueEl.appendChild(row.node);
+        } else {
+          valueEl.textContent = row.value;
+        }
+
+        line.appendChild(labelEl);
+        line.appendChild(valueEl);
+        previewModalContent.appendChild(line);
       }
 
+      pendingConfirmCallback = onConfirm;
+      previewModal.classList.add('open');
+    }
+
+    function closePreviewModal() {
+      previewModal.classList.remove('open');
+      pendingConfirmCallback = null;
+    }
+
+    cancelPreviewBtn.addEventListener('click', closePreviewModal);
+    previewModal.addEventListener('click', (event) => {
+      if (event.target === previewModal) closePreviewModal();
+    });
+
+    confirmPreviewBtn.addEventListener('click', async () => {
+      if (typeof pendingConfirmCallback !== 'function') return;
+      const fn = pendingConfirmCallback;
+      closePreviewModal();
+      await fn();
+    });
+
+    async function commitCreateStudent(studentName, subjectName, section) {
       createStudentBtn.disabled = true;
-      createStudentBtn.textContent = 'Creating...';
+      createStudentBtn.textContent = 'Committing to MongoDB...';
 
       try {
         const response = await fetch(`${API_BASE_URL}/api`, {
@@ -674,76 +1479,64 @@
             'Content-Type': 'application/json',
             Accept: 'application/json',
           },
-          body: JSON.stringify({
-            studentName,
-            subjectName,
-            section,
-          }),
+          body: JSON.stringify({ studentName, subjectName, section }),
         });
 
         const result = await response.json().catch(() => ({}));
-
         if (!response.ok) {
           throw new Error(result.error || result.details || `HTTP ${response.status}`);
         }
 
         createStudentForm.reset();
         await loadAttendanceRecords({
-          silentBanner: true,
+          silentNotice: true,
           preserveStudentId: result._id ? String(result._id) : null,
         });
-        showBanner(
-          `Successfully created student record for "${result.studentName}" in ${result.section}.`,
+        showNotice(
+          `Registered "${result.studentName}" (${result.section}) in daily_attendance.`,
           'success'
         );
       } catch (error) {
-        showBanner(`Failed to create student record: ${error.message}`, 'error');
+        showNotice(`Registration failed: ${error.message}`, 'error');
       } finally {
         createStudentBtn.disabled = false;
-        createStudentBtn.textContent = 'Create Student Record';
+        createStudentBtn.textContent = 'Register Student in Roster';
+      }
+    }
+
+    createStudentForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      clearNotice();
+
+      const studentName = studentNameInput.value.trim();
+      const subjectName = subjectNameInput.value.trim();
+      const section = sectionInput.value.trim();
+
+      if (!studentName || !subjectName || !section) {
+        showNotice('Validation Error: Student Name, Subject Title, and Section Code are all required.', 'error');
+        return;
+      }
+
+      if (stageChangesToggle.checked) {
+        openPreviewModal(
+          'Verify New Student Registration',
+          'Review the student record below before inserting it into LabAttendanceDBBAUTISTA.daily_attendance:',
+          [
+            { label: 'Student Name', value: studentName },
+            { label: 'Course / Subject', value: subjectName },
+            { label: 'Section Code', value: section },
+            { label: 'Initial Attendance Log', value: '[] (Empty)' },
+          ],
+          () => commitCreateStudent(studentName, subjectName, section)
+        );
+      } else {
+        await commitCreateStudent(studentName, subjectName, section);
       }
     });
 
-    addAttendanceForm.addEventListener('submit', async (event) => {
-      event.preventDefault();
-      clearBanner();
-
-      const studentId = studentSelect.value.trim();
-      const date = attendanceDateInput.value.trim();
-      const status = attendanceStatusSelect.value;
-
-      if (!studentId) {
-        showBanner('Validation Error: Please select a student.', 'error');
-        return;
-      }
-
-      if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
-        showBanner('Validation Error: Please select a valid date in YYYY-MM-DD format.', 'error');
-        return;
-      }
-
-      if (!['Present', 'Absent', 'Late'].includes(status)) {
-        showBanner('Validation Error: Attendance status must be Present, Absent, or Late.', 'error');
-        return;
-      }
-
-      // Frontend duplicate check before sending request
-      const selectedStudent = allRecords.find((r) => String(r._id) === studentId);
-      if (selectedStudent && Array.isArray(selectedStudent.attendanceDates)) {
-        const hasDuplicate = selectedStudent.attendanceDates.some(
-          (entry) => normalizeAttendanceEntry(entry).date === date
-        );
-        if (hasDuplicate) {
-          showBanner(
-            `Duplicate Date Prevented: ${selectedStudent.studentName} already has an attendance entry for ${date}.`,
-            'error'
-          );
-          return;
-        }
-      }
-
+    async function commitAddAttendance(studentId, date, status) {
       addAttendanceBtn.disabled = true;
-      addAttendanceBtn.textContent = 'Saving...';
+      addAttendanceBtn.textContent = 'Committing to MongoDB...';
 
       try {
         const response = await fetch(`${API_BASE_URL}/api/attendance`, {
@@ -752,40 +1545,102 @@
             'Content-Type': 'application/json',
             Accept: 'application/json',
           },
-          body: JSON.stringify({
-            studentId,
-            date,
-            status,
-          }),
+          body: JSON.stringify({ studentId, date, status }),
         });
 
         const result = await response.json().catch(() => ({}));
-
         if (!response.ok) {
           throw new Error(result.error || result.details || `HTTP ${response.status}`);
         }
 
         attendanceDateInput.value = '';
         await loadAttendanceRecords({
-          silentBanner: true,
+          silentNotice: true,
           preserveStudentId: studentId,
         });
-        showBanner(
-          `Successfully recorded ${status} on ${date} for "${result.studentName}".`,
+        showNotice(
+          `Recorded ${status} on ${date} for "${result.studentName}".`,
           'success'
         );
       } catch (error) {
-        showBanner(`Failed to add attendance entry: ${error.message}`, 'error');
+        showNotice(`Attendance update failed: ${error.message}`, 'error');
       } finally {
         addAttendanceBtn.disabled = false;
-        addAttendanceBtn.textContent = 'Add Attendance Entry';
+        addAttendanceBtn.textContent = 'Record Attendance Entry';
+      }
+    }
+
+    addAttendanceForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      clearNotice();
+
+      const studentId = studentSelect.value.trim();
+      const date = attendanceDateInput.value.trim();
+      const status = attendanceStatusSelect.value;
+
+      if (!studentId) {
+        showNotice('Validation Error: Please select an enrolled student from the roster.', 'error');
+        return;
+      }
+
+      if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+        showNotice('Validation Error: Please enter a valid date in YYYY-MM-DD format.', 'error');
+        return;
+      }
+
+      if (!['Present', 'Absent', 'Late'].includes(status)) {
+        showNotice('Validation Error: Status must be Present, Late, or Absent.', 'error');
+        return;
+      }
+
+      const selectedStudent = allRecords.find((r) => String(r._id) === studentId);
+      if (selectedStudent && Array.isArray(selectedStudent.attendanceDates)) {
+        const duplicate = selectedStudent.attendanceDates.some(
+          (entry) => normalizeAttendanceEntry(entry).date === date
+        );
+        if (duplicate) {
+          showNotice(
+            `Duplicate Entry Blocked: ${selectedStudent.studentName} already has a recorded status for ${date}.`,
+            'error'
+          );
+          return;
+        }
+      }
+
+      if (stageChangesToggle.checked && selectedStudent) {
+        const chipsContainer = document.createElement('div');
+        chipsContainer.className = 'dates-container';
+        chipsContainer.style.justifyContent = 'flex-end';
+
+        const existingDates = Array.isArray(selectedStudent.attendanceDates)
+          ? selectedStudent.attendanceDates.map(normalizeAttendanceEntry)
+          : [];
+        for (const item of existingDates) {
+          chipsContainer.appendChild(buildStatusChip(item.date, item.status, false));
+        }
+        chipsContainer.appendChild(buildStatusChip(date, status, true));
+
+        openPreviewModal(
+          'Verify Session Attendance Entry',
+          `Review ${selectedStudent.studentName}'s updated attendance log before committing to MongoDB Atlas:`,
+          [
+            { label: 'Student', value: selectedStudent.studentName },
+            { label: 'Section & Subject', value: `${selectedStudent.section} · ${selectedStudent.subjectName}` },
+            { label: 'Staged Session Entry', value: `${date} (${status})` },
+            { label: 'Resulting Ledger Log', node: chipsContainer },
+          ],
+          () => commitAddAttendance(studentId, date, status)
+        );
+      } else {
+        await commitAddAttendance(studentId, date, status);
       }
     });
 
     studentSelect.addEventListener('change', updateSelectedStudentHint);
-    sectionFilter.addEventListener('change', renderTable);
     searchInput.addEventListener('input', renderTable);
-    refreshBtn.addEventListener('click', () => loadAttendanceRecords({ silentBanner: false }));
+    refreshBtn.addEventListener('click', () =>
+      loadAttendanceRecords({ silentNotice: false, manualRefresh: true })
+    );
 
     // Initial load
     loadAttendanceRecords();
