@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Laboratory Student Attendance System — LabAttendanceDBBAUTISTA</title>
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --border: #e2e8f0;
+      --text: #0f172a;
+      --muted: #475569;
+      --primary: #1d4ed8;
+      --primary-hover: #1e40af;
+      --present-bg: #dcfce7;
+      --present-text: #166534;
+      --absent-bg: #fee2e2;
+      --absent-text: #991b1b;
+      --late-bg: #fef3c7;
+      --late-text: #92400e;
+      --error-bg: #fef2f2;
+      --error-border: #fecaca;
+      --error-text: #b91c1c;
+      --success-bg: #f0fdf4;
+      --success-border: #bbf7d0;
+      --success-text: #15803d;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+
+    header {
+      background-color: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 1.25rem 1.5rem;
+    }
+
+    .container {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 1.5rem;
+    }
+
+    .header-inner {
+      max-width: 1180px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 1.4rem;
+    }
+
+    .subtitle {
+      margin: 0.25rem 0 0;
+      font-size: 0.875rem;
+      color: var(--muted);
+    }
+
+    .badge-endpoint {
+      font-family: monospace;
+      font-size: 0.8rem;
+      background: #f1f5f9;
+      border: 1px solid var(--border);
+      padding: 0.35rem 0.65rem;
+      border-radius: 6px;
+      color: var(--muted);
+    }
+
+    .alert {
+      padding: 0.85rem 1rem;
+      border-radius: 8px;
+      margin-bottom: 1.25rem;
+      font-size: 0.925rem;
+      display: none;
+    }
+
+    .alert.visible {
+      display: block;
+    }
+
+    .alert-error {
+      background-color: var(--error-bg);
+      border: 1px solid var(--error-border);
+      color: var(--error-text);
+    }
+
+    .alert-success {
+      background-color: var(--success-bg);
+      border: 1px solid var(--success-border);
+      color: var(--success-text);
+    }
+
+    .grid-forms {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.25rem;
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+    }
+
+    .card h2 {
+      margin-top: 0;
+      margin-bottom: 0.35rem;
+      font-size: 1.1rem;
+    }
+
+    .card p.helper {
+      margin-top: 0;
+      margin-bottom: 1rem;
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+
+    .form-group {
+      margin-bottom: 0.9rem;
+    }
+
+    label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 0.35rem;
+    }
+
+    input[type="text"],
+    input[type="date"],
+    select {
+      width: 100%;
+      padding: 0.55rem 0.7rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 0.925rem;
+      background-color: #fff;
+      color: var(--text);
+    }
+
+    input:focus,
+    select:focus {
+      outline: 2px solid #93c5fd;
+      border-color: var(--primary);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      background-color: var(--primary);
+      color: #ffffff;
+      border: none;
+      border-radius: 6px;
+      padding: 0.6rem 1rem;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .btn:hover:not(:disabled) {
+      background-color: var(--primary-hover);
+    }
+
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .btn-secondary {
+      background-color: #f1f5f9;
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background-color: #e2e8f0;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+
+    .toolbar-filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      align-items: center;
+    }
+
+    .toolbar-filters select,
+    .toolbar-filters input {
+      width: auto;
+      min-width: 200px;
+    }
+
+    .table-wrapper {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+
+    th,
+    td {
+      text-align: left;
+      padding: 0.75rem 0.85rem;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+
+    th {
+      background-color: #f8fafc;
+      font-weight: 600;
+      color: var(--muted);
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    .attendance-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      padding: 0.2rem 0.55rem;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      font-weight: 600;
+    }
+
+    .pill-present {
+      background-color: var(--present-bg);
+      color: var(--present-text);
+    }
+
+    .pill-absent {
+      background-color: var(--absent-bg);
+      color: var(--absent-text);
+    }
+
+    .pill-late {
+      background-color: var(--late-bg);
+      color: var(--late-text);
+    }
+
+    .empty-dates {
+      color: var(--muted);
+      font-style: italic;
+      font-size: 0.85rem;
+    }
+
+    .status-state {
+      text-align: center;
+      padding: 2rem 1rem;
+      color: var(--muted);
+    }
+
+    .existing-dates-hint {
+      margin-top: 0.35rem;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <div>
+        <h1>Student Laboratory Attendance System</h1>
+        <p class="subtitle">Database: <strong>LabAttendanceDBBAUTISTA</strong> &bull; Collection: <strong>daily_attendance</strong></p>
+      </div>
+      <div class="badge-endpoint" id="apiUrlBadge"></div>
+    </div>
+  </header>
+
+  <main class="container">
+    <div id="statusBanner" class="alert" role="status" aria-live="polite"></div>
+
+    <div class="grid-forms">
+      <!-- Form 1: Create New Student Document (POST /api) -->
+      <section class="card" aria-labelledby="addStudentHeading">
+        <h2 id="addStudentHeading">1. Add New Student Record</h2>
+        <p class="helper">Creates a new student document in <code>daily_attendance</code> via <code>POST /api</code>.</p>
+        <form id="createStudentForm" novalidate>
+          <div class="form-group">
+            <label for="studentNameInput">Student Name *</label>
+            <input type="text" id="studentNameInput" name="studentName" placeholder="e.g., Dexter Morgan" required />
+          </div>
+          <div class="form-group">
+            <label for="subjectNameInput">Subject Name *</label>
+            <input type="text" id="subjectNameInput" name="subjectName" list="subjectSuggestions" placeholder="e.g., Network Administration" required />
+            <datalist id="subjectSuggestions">
+              <option value="Network Administration"></option>
+              <option value="Object-Oriented Programming"></option>
+              <option value="Microprocessor Systems"></option>
+            </datalist>
+          </div>
+          <div class="form-group">
+            <label for="sectionInput">Section *</label>
+            <input type="text" id="sectionInput" name="section" list="sectionSuggestions" placeholder="e.g., BSIT-3A 9332-AY226" required />
+            <datalist id="sectionSuggestions">
+              <option value="BSIT-3A 9332-AY226"></option>
+              <option value="BSCS-2B 9487-AY226"></option>
+              <option value="BSCpE-4C 9105-AY226"></option>
+            </datalist>
+          </div>
+          <button type="submit" class="btn" id="createStudentBtn">Create Student Record</button>
+        </form>
+      </section>
+
+      <!-- Form 2: Add Attendance Date to Existing Student (POST /api/attendance) -->
+      <section class="card" aria-labelledby="addAttendanceHeading">
+        <h2 id="addAttendanceHeading">2. Record Laboratory Attendance Date</h2>
+        <p class="helper">Appends an attendance entry to an existing student via <code>POST /api/attendance</code>.</p>
+        <form id="addAttendanceForm" novalidate>
+          <div class="form-group">
+            <label for="studentSelect">Select Student *</label>
+            <select id="studentSelect" name="studentId" required>
+              <option value="">-- Loading students... --</option>
+            </select>
+            <div class="existing-dates-hint" id="selectedStudentDatesHint"></div>
+          </div>
+          <div class="form-group">
+            <label for="attendanceDateInput">Attendance Date (YYYY-MM-DD) *</label>
+            <input type="date" id="attendanceDateInput" name="date" required />
+          </div>
+          <div class="form-group">
+            <label for="attendanceStatusSelect">Attendance Status *</label>
+            <select id="attendanceStatusSelect" name="status" required>
+              <option value="Present">Present</option>
+              <option value="Late">Late</option>
+              <option value="Absent">Absent</option>
+            </select>
+          </div>
+          <button type="submit" class="btn" id="addAttendanceBtn">Add Attendance Entry</button>
+        </form>
+      </section>
+    </div>
+
+    <!-- Attendance Records Table -->
+    <section class="card" aria-labelledby="recordsHeading">
+      <div class="toolbar">
+        <div>
+          <h2 id="recordsHeading" style="margin-bottom: 0.15rem;">Attendance Records (<span id="recordCount">0</span>)</h2>
+          <p class="helper" style="margin-bottom: 0;">Live records retrieved from MongoDB Atlas via Vercel Serverless API.</p>
+        </div>
+        <div class="toolbar-filters">
+          <select id="sectionFilter" aria-label="Filter by Section">
+            <option value="ALL">All Sections / Subjects</option>
+          </select>
+          <input type="text" id="searchInput" placeholder="Search student name..." aria-label="Search student name" />
+          <button type="button" class="btn btn-secondary" id="refreshBtn">Refresh Records</button>
+        </div>
+      </div>
+
+      <div id="loadingIndicator" class="status-state">Loading attendance records from MongoDB Atlas...</div>
+      <div id="emptyIndicator" class="status-state" style="display: none;">No attendance records match your current view.</div>
+
+      <div class="table-wrapper" id="tableWrapper" style="display: none;">
+        <table>
+          <thead>
+            <tr>
+              <th>Student Name</th>
+              <th>Subject</th>
+              <th>Section</th>
+              <th>Attendance Dates &amp; Statuses</th>
+            </tr>
+          </thead>
+          <tbody id="recordsTableBody"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const API_BASE_URL = 'https://student-api-backend-fawn.vercel.app';
+
+    let allRecords = [];
+
+    const apiUrlBadge = document.getElementById('apiUrlBadge');
+    const statusBanner = document.getElementById('statusBanner');
+    const createStudentForm = document.getElementById('createStudentForm');
+    const createStudentBtn = document.getElementById('createStudentBtn');
+    const studentNameInput = document.getElementById('studentNameInput');
+    const subjectNameInput = document.getElementById('subjectNameInput');
+    const sectionInput = document.getElementById('sectionInput');
+
+    const addAttendanceForm = document.getElementById('addAttendanceForm');
+    const addAttendanceBtn = document.getElementById('addAttendanceBtn');
+    const studentSelect = document.getElementById('studentSelect');
+    const selectedStudentDatesHint = document.getElementById('selectedStudentDatesHint');
+    const attendanceDateInput = document.getElementById('attendanceDateInput');
+    const attendanceStatusSelect = document.getElementById('attendanceStatusSelect');
+
+    const recordCount = document.getElementById('recordCount');
+    const sectionFilter = document.getElementById('sectionFilter');
+    const searchInput = document.getElementById('searchInput');
+    const refreshBtn = document.getElementById('refreshBtn');
+    const loadingIndicator = document.getElementById('loadingIndicator');
+    const emptyIndicator = document.getElementById('emptyIndicator');
+    const tableWrapper = document.getElementById('tableWrapper');
+    const recordsTableBody = document.getElementById('recordsTableBody');
+
+    apiUrlBadge.textContent = `API: ${API_BASE_URL}/api`;
+
+    function showBanner(message, type) {
+      statusBanner.textContent = message;
+      statusBanner.className = `alert visible ${type === 'error' ? 'alert-error' : 'alert-success'}`;
+    }
+
+    function clearBanner() {
+      statusBanner.textContent = '';
+      statusBanner.className = 'alert';
+    }
+
+    function normalizeAttendanceEntry(entry) {
+      if (typeof entry === 'string') {
+        return { date: entry, status: 'Present' };
+      }
+      return {
+        date: entry && typeof entry.date === 'string' ? entry.date : '',
+        status: entry && typeof entry.status === 'string' ? entry.status : 'Present',
+      };
+    }
+
+    function updateSelectedStudentHint() {
+      const selectedId = studentSelect.value;
+      if (!selectedId) {
+        selectedStudentDatesHint.textContent = '';
+        return;
+      }
+      const student = allRecords.find((r) => String(r._id) === selectedId);
+      if (!student) {
+        selectedStudentDatesHint.textContent = '';
+        return;
+      }
+      const dates = Array.isArray(student.attendanceDates)
+        ? student.attendanceDates.map((d) => normalizeAttendanceEntry(d).date).filter(Boolean)
+        : [];
+      if (dates.length === 0) {
+        selectedStudentDatesHint.textContent = 'Recorded dates for this student: None yet.';
+      } else {
+        selectedStudentDatesHint.textContent = `Already recorded dates: ${dates.join(', ')}`;
+      }
+    }
+
+    function populateStudentDropdown(preserveSelectedId) {
+      const previousId = preserveSelectedId || studentSelect.value;
+      studentSelect.replaceChildren();
+
+      const placeholder = document.createElement('option');
+      placeholder.value = '';
+      placeholder.textContent = allRecords.length
+        ? '-- Select a student --'
+        : '-- No students available --';
+      studentSelect.appendChild(placeholder);
+
+      for (const rec of allRecords) {
+        const option = document.createElement('option');
+        option.value = String(rec._id);
+        option.textContent = `${rec.studentName} — ${rec.section} (${rec.subjectName})`;
+        studentSelect.appendChild(option);
+      }
+
+      if (previousId && allRecords.some((r) => String(r._id) === previousId)) {
+        studentSelect.value = previousId;
+      }
+      updateSelectedStudentHint();
+    }
+
+    function populateSectionFilter() {
+      const currentVal = sectionFilter.value;
+      const sections = Array.from(
+        new Set(allRecords.map((r) => `${r.section} | ${r.subjectName}`))
+      ).sort();
+
+      sectionFilter.replaceChildren();
+      const allOpt = document.createElement('option');
+      allOpt.value = 'ALL';
+      allOpt.textContent = 'All Sections / Subjects';
+      sectionFilter.appendChild(allOpt);
+
+      for (const item of sections) {
+        const opt = document.createElement('option');
+        opt.value = item;
+        opt.textContent = item;
+        sectionFilter.appendChild(opt);
+      }
+
+      if (sections.includes(currentVal)) {
+        sectionFilter.value = currentVal;
+      }
+    }
+
+    function renderTable() {
+      const filterVal = sectionFilter.value;
+      const query = searchInput.value.trim().toLowerCase();
+
+      const filtered = allRecords.filter((rec) => {
+        const matchesSection =
+          filterVal === 'ALL' || `${rec.section} | ${rec.subjectName}` === filterVal;
+        const matchesSearch =
+          !query ||
+          String(rec.studentName || '').toLowerCase().includes(query) ||
+          String(rec.subjectName || '').toLowerCase().includes(query) ||
+          String(rec.section || '').toLowerCase().includes(query);
+        return matchesSection && matchesSearch;
+      });
+
+      recordCount.textContent = String(filtered.length);
+      recordsTableBody.replaceChildren();
+
+      if (filtered.length === 0) {
+        tableWrapper.style.display = 'none';
+        emptyIndicator.style.display = 'block';
+        return;
+      }
+
+      emptyIndicator.style.display = 'none';
+      tableWrapper.style.display = 'block';
+
+      for (const rec of filtered) {
+        const tr = document.createElement('tr');
+
+        const tdName = document.createElement('td');
+        const nameStrong = document.createElement('strong');
+        nameStrong.textContent = rec.studentName || '';
+        tdName.appendChild(nameStrong);
+
+        const tdSubject = document.createElement('td');
+        tdSubject.textContent = rec.subjectName || '';
+
+        const tdSection = document.createElement('td');
+        tdSection.textContent = rec.section || '';
+
+        const tdDates = document.createElement('td');
+        const rawDates = Array.isArray(rec.attendanceDates) ? rec.attendanceDates : [];
+
+        if (rawDates.length === 0) {
+          const emptySpan = document.createElement('span');
+          emptySpan.className = 'empty-dates';
+          emptySpan.textContent = 'No attendance dates recorded';
+          tdDates.appendChild(emptySpan);
+        } else {
+          const listDiv = document.createElement('div');
+          listDiv.className = 'attendance-list';
+
+          const sortedDates = rawDates
+            .map(normalizeAttendanceEntry)
+            .sort((a, b) => a.date.localeCompare(b.date));
+
+          for (const entry of sortedDates) {
+            const pill = document.createElement('span');
+            const statusLower = entry.status.toLowerCase();
+            let statusClass = 'pill-present';
+            if (statusLower === 'absent') statusClass = 'pill-absent';
+            else if (statusLower === 'late') statusClass = 'pill-late';
+
+            pill.className = `pill ${statusClass}`;
+            pill.textContent = `${entry.date}: ${entry.status}`;
+            listDiv.appendChild(pill);
+          }
+
+          tdDates.appendChild(listDiv);
+        }
+
+        tr.appendChild(tdName);
+        tr.appendChild(tdSubject);
+        tr.appendChild(tdSection);
+        tr.appendChild(tdDates);
+        recordsTableBody.appendChild(tr);
+      }
+    }
+
+    async function loadAttendanceRecords(options = {}) {
+      const { silentBanner = false, preserveStudentId = null } = options;
+      if (!silentBanner) {
+        clearBanner();
+      }
+
+      loadingIndicator.style.display = 'block';
+      emptyIndicator.style.display = 'none';
+      tableWrapper.style.display = 'none';
+      refreshBtn.disabled = true;
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/api`, {
+          method: 'GET',
+          headers: { Accept: 'application/json' },
+        });
+
+        const data = await response.json().catch(() => null);
+
+        if (!response.ok) {
+          const errMsg =
+            (data && (data.error || data.details)) ||
+            `Failed to load records (HTTP ${response.status}).`;
+          throw new Error(errMsg);
+        }
+
+        if (!Array.isArray(data)) {
+          throw new Error('Unexpected response format from GET /api.');
+        }
+
+        allRecords = data;
+        populateSectionFilter();
+        populateStudentDropdown(preserveStudentId);
+        loadingIndicator.style.display = 'none';
+        renderTable();
+      } catch (error) {
+        loadingIndicator.style.display = 'none';
+        emptyIndicator.style.display = 'block';
+        emptyIndicator.textContent = 'Unable to load records from the API.';
+        showBanner(`Error loading attendance records: ${error.message}`, 'error');
+      } finally {
+        refreshBtn.disabled = false;
+      }
+    }
+
+    createStudentForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      clearBanner();
+
+      const studentName = studentNameInput.value.trim();
+      const subjectName = subjectNameInput.value.trim();
+      const section = sectionInput.value.trim();
+
+      if (!studentName || !subjectName || !section) {
+        showBanner('Validation Error: Please fill in Student Name, Subject Name, and Section.', 'error');
+        return;
+      }
+
+      createStudentBtn.disabled = true;
+      createStudentBtn.textContent = 'Creating...';
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/api`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+          },
+          body: JSON.stringify({
+            studentName,
+            subjectName,
+            section,
+          }),
+        });
+
+        const result = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+          throw new Error(result.error || result.details || `HTTP ${response.status}`);
+        }
+
+        createStudentForm.reset();
+        await loadAttendanceRecords({
+          silentBanner: true,
+          preserveStudentId: result._id ? String(result._id) : null,
+        });
+        showBanner(
+          `Successfully created student record for "${result.studentName}" in ${result.section}.`,
+          'success'
+        );
+      } catch (error) {
+        showBanner(`Failed to create student record: ${error.message}`, 'error');
+      } finally {
+        createStudentBtn.disabled = false;
+        createStudentBtn.textContent = 'Create Student Record';
+      }
+    });
+
+    addAttendanceForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      clearBanner();
+
+      const studentId = studentSelect.value.trim();
+      const date = attendanceDateInput.value.trim();
+      const status = attendanceStatusSelect.value;
+
+      if (!studentId) {
+        showBanner('Validation Error: Please select a student.', 'error');
+        return;
+      }
+
+      if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+        showBanner('Validation Error: Please select a valid date in YYYY-MM-DD format.', 'error');
+        return;
+      }
+
+      if (!['Present', 'Absent', 'Late'].includes(status)) {
+        showBanner('Validation Error: Attendance status must be Present, Absent, or Late.', 'error');
+        return;
+      }
+
+      // Frontend duplicate check before sending request
+      const selectedStudent = allRecords.find((r) => String(r._id) === studentId);
+      if (selectedStudent && Array.isArray(selectedStudent.attendanceDates)) {
+        const hasDuplicate = selectedStudent.attendanceDates.some(
+          (entry) => normalizeAttendanceEntry(entry).date === date
+        );
+        if (hasDuplicate) {
+          showBanner(
+            `Duplicate Date Prevented: ${selectedStudent.studentName} already has an attendance entry for ${date}.`,
+            'error'
+          );
+          return;
+        }
+      }
+
+      addAttendanceBtn.disabled = true;
+      addAttendanceBtn.textContent = 'Saving...';
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/attendance`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+          },
+          body: JSON.stringify({
+            studentId,
+            date,
+            status,
+          }),
+        });
+
+        const result = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+          throw new Error(result.error || result.details || `HTTP ${response.status}`);
+        }
+
+        attendanceDateInput.value = '';
+        await loadAttendanceRecords({
+          silentBanner: true,
+          preserveStudentId: studentId,
+        });
+        showBanner(
+          `Successfully recorded ${status} on ${date} for "${result.studentName}".`,
+          'success'
+        );
+      } catch (error) {
+        showBanner(`Failed to add attendance entry: ${error.message}`, 'error');
+      } finally {
+        addAttendanceBtn.disabled = false;
+        addAttendanceBtn.textContent = 'Add Attendance Entry';
+      }
+    });
+
+    studentSelect.addEventListener('change', updateSelectedStudentHint);
+    sectionFilter.addEventListener('change', renderTable);
+    searchInput.addEventListener('input', renderTable);
+    refreshBtn.addEventListener('click', () => loadAttendanceRecords({ silentBanner: false }));
+
+    // Initial load
+    loadAttendanceRecords();
+  </script>
+</body>
+</html>
