@@ -1511,7 +1511,8 @@
           minute: '2-digit',
           second: '2-digit',
         });
-        syncStatusText.textContent = `Atlas Live · ${timeStr}`;
+        isAtlasConnected = true;
+        updateLiveClock();
         lastSyncedFooter.textContent = `Last synchronized with MongoDB Atlas at ${timeStr}`;
 
         if (manualRefresh) {
@@ -1521,6 +1522,7 @@
         loadingIndicator.style.display = 'none';
         emptyIndicator.style.display = 'block';
         emptyIndicator.textContent = 'Unable to retrieve records from the API server.';
+        isAtlasConnected = false;
         syncStatusText.textContent = 'Connection Error';
         showNotice(`Failed to load attendance ledger: ${error.message}`, 'error');
       } finally {
@@ -1768,6 +1770,18 @@
     refreshBtn.addEventListener('click', () =>
       loadAttendanceRecords({ silentNotice: false, manualRefresh: true })
     );
+
+    let isAtlasConnected = false;
+    function updateLiveClock() {
+      if (!isAtlasConnected) return;
+      const nowStr = new Date().toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+      });
+      syncStatusText.textContent = `Atlas Live · ${nowStr}`;
+    }
+    setInterval(updateLiveClock, 1000);
 
     // Initial load
     loadAttendanceRecords();
