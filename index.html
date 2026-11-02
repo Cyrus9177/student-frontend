@@ -1700,6 +1700,12 @@
         return;
       }
 
+      const todayMax = getLocalTodayDateString();
+      if (date > todayMax) {
+        showNotice(`Validation Error: Future dates are not allowed. Please select ${todayMax} or an earlier date.`, 'error');
+        return;
+      }
+
       if (!['Present', 'Absent', 'Late'].includes(status)) {
         showNotice('Validation Error: Status must be Present, Late, or Absent.', 'error');
         return;
@@ -1772,8 +1778,36 @@
       loadAttendanceRecords({ silentNotice: false, manualRefresh: true })
     );
 
+    function getLocalTodayDateString() {
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const day = String(now.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
+    function syncMaxAttendanceDate() {
+      const todayStr = getLocalTodayDateString();
+      if (attendanceDateInput.max !== todayStr) {
+        attendanceDateInput.max = todayStr;
+      }
+    }
+
+    syncMaxAttendanceDate();
+    attendanceDateInput.addEventListener('focus', syncMaxAttendanceDate);
+    attendanceDateInput.addEventListener('click', syncMaxAttendanceDate);
+    attendanceDateInput.addEventListener('change', () => {
+      const val = attendanceDateInput.value.trim();
+      const todayStr = getLocalTodayDateString();
+      if (val && val > todayStr) {
+        attendanceDateInput.value = todayStr;
+        showNotice(`Future dates are disabled. Date has been capped at today (${todayStr}).`, 'error');
+      }
+    });
+
     let isAtlasConnected = false;
     function updateLiveClock() {
+      syncMaxAttendanceDate();
       if (!isAtlasConnected) return;
       const nowStr = new Date().toLocaleTimeString([], {
         hour: '2-digit',
