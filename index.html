@@ -717,6 +717,34 @@
       background: rgba(0, 0, 0, 0.08);
     }
 
+    .btn-action-edit {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      background: var(--surface-white);
+      border: 1px solid var(--border-color);
+      color: var(--navy-primary);
+      padding: 0.26rem 0.55rem;
+      border-radius: 4px;
+      font-family: var(--font-sans);
+      font-size: 0.74rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+
+    .btn-action-edit:hover:not(:disabled) {
+      background-color: var(--navy-subtle);
+      border-color: var(--navy-primary);
+      color: var(--navy-primary);
+    }
+
+    .btn-action-edit svg {
+      width: 13px;
+      height: 13px;
+    }
+
     .btn-action-delete {
       display: inline-flex;
       align-items: center;
@@ -970,7 +998,7 @@
       <div class="context-meta">
         <span>Database: <code class="mono-code">LabAttendanceDBBAUTISTA</code></span>
         <span>Collection: <code class="mono-code">daily_attendance</code></span>
-        <span>Operations: <code class="mono-code">CRUD (GET, POST, DELETE)</code></span>
+        <span>Operations: <code class="mono-code">Full CRUD (GET, POST, PUT, DELETE)</code></span>
         <span>Gateway: <code class="mono-code">student-api-backend-fawn.vercel.app</code></span>
       </div>
       <label class="preview-mode-switch" for="stageChangesToggle">
@@ -1098,7 +1126,7 @@
       <section class="panel" aria-labelledby="ledgerHeading">
         <div class="panel-header">
           <h2 class="panel-title" id="ledgerHeading">Official Laboratory Attendance Roster (<span id="visibleCount">0</span>)</h2>
-          <span class="endpoint-tag">GET &bull; DELETE /api</span>
+          <span class="endpoint-tag">GET &bull; PUT &bull; DELETE /api</span>
         </div>
 
         <div class="console-toolbar">
@@ -1126,7 +1154,7 @@
                 <th>Subject</th>
                 <th>Section</th>
                 <th>Session Attendance Log (YYYY-MM-DD)</th>
-                <th style="text-align: right; width: 95px;">Actions</th>
+                <th style="text-align: right; width: 145px;">Actions</th>
               </tr>
             </thead>
             <tbody id="recordsTableBody"></tbody>
@@ -1175,6 +1203,42 @@
           Confirm &amp; Commit to MongoDB
         </button>
       </div>
+    </div>
+  </div>
+
+  <!-- Edit Student Record Modal (PUT /api) -->
+  <div class="modal-overlay" id="editStudentModal" role="dialog" aria-modal="true" aria-labelledby="editModalTitle">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div class="modal-kicker">Registrar Record Modification</div>
+        <h3 class="modal-title" id="editModalTitle">Edit Student &amp; Course Information</h3>
+      </div>
+      <form id="editStudentForm" novalidate>
+        <div class="modal-body">
+          <p class="modal-desc">
+            Correct misspelled student names, update course titles, or modify section codes directly in <code class="mono-code">daily_attendance</code>.
+          </p>
+          <input type="hidden" id="editStudentId" />
+          <div class="field-group">
+            <label for="editStudentName">Student Full Name *</label>
+            <input type="text" id="editStudentName" required />
+          </div>
+          <div class="field-group">
+            <label for="editSubjectName">Course / Subject Title *</label>
+            <input type="text" id="editSubjectName" required />
+          </div>
+          <div class="field-group">
+            <label for="editSection">Section &amp; Academic Year Code *</label>
+            <input type="text" id="editSection" required />
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" id="cancelEditBtn">Cancel</button>
+          <button type="submit" class="btn-primary" id="saveEditBtn" style="width: auto;">
+            Update Record (PUT /api)
+          </button>
+        </div>
+      </form>
     </div>
   </div>
 
@@ -1527,10 +1591,28 @@
 
         const tdAction = document.createElement('td');
         tdAction.style.textAlign = 'right';
+        tdAction.style.whiteSpace = 'nowrap';
+
+        const editBtn = document.createElement('button');
+        editBtn.type = 'button';
+        editBtn.className = 'btn-action-edit';
+        editBtn.title = `Edit record for "${rec.studentName}"`;
+        editBtn.setAttribute('aria-label', `Edit student ${rec.studentName}`);
+        editBtn.innerHTML = `
+          <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+          </svg>
+          <span>Edit</span>
+        `;
+        editBtn.addEventListener('click', () => {
+          openEditStudentModal(rec);
+        });
 
         const delBtn = document.createElement('button');
         delBtn.type = 'button';
         delBtn.className = 'btn-action-delete';
+        delBtn.style.marginLeft = '0.35rem';
         delBtn.title = `Delete "${rec.studentName}" from daily_attendance`;
         delBtn.setAttribute('aria-label', `Delete student ${rec.studentName}`);
         delBtn.innerHTML = `
@@ -1543,6 +1625,8 @@
         delBtn.addEventListener('click', () => {
           requestDeleteStudent(rec);
         });
+
+        tdAction.appendChild(editBtn);
         tdAction.appendChild(delBtn);
 
         tr.appendChild(tdIndex);
@@ -1681,6 +1765,69 @@
       const fn = pendingConfirmCallback;
       closePreviewModal();
       await fn();
+    });
+
+    function openEditStudentModal(rec) {
+      clearNotice();
+      document.getElementById('editStudentId').value = String(rec._id);
+      document.getElementById('editStudentName').value = rec.studentName || '';
+      document.getElementById('editSubjectName').value = rec.subjectName || '';
+      document.getElementById('editSection').value = rec.section || '';
+      document.getElementById('editStudentModal').classList.add('open');
+    }
+
+    function closeEditStudentModal() {
+      document.getElementById('editStudentModal').classList.remove('open');
+    }
+
+    document.getElementById('cancelEditBtn').addEventListener('click', closeEditStudentModal);
+    document.getElementById('editStudentModal').addEventListener('click', (event) => {
+      if (event.target === document.getElementById('editStudentModal')) closeEditStudentModal();
+    });
+
+    document.getElementById('editStudentForm').addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const studentId = document.getElementById('editStudentId').value.trim();
+      const studentName = document.getElementById('editStudentName').value.trim();
+      const subjectName = document.getElementById('editSubjectName').value.trim();
+      const section = document.getElementById('editSection').value.trim();
+
+      if (!studentName || !subjectName || !section) {
+        showNotice('Validation Error: Student Name, Subject, and Section are all required.', 'error');
+        return;
+      }
+
+      const saveEditBtn = document.getElementById('saveEditBtn');
+      saveEditBtn.disabled = true;
+      saveEditBtn.textContent = 'Updating...';
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/api`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+          },
+          body: JSON.stringify({ studentId, studentName, subjectName, section }),
+        });
+
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          throw new Error(data.error || data.details || `HTTP ${response.status}`);
+        }
+
+        closeEditStudentModal();
+        await loadAttendanceRecords({
+          silentNotice: true,
+          preserveStudentId: studentId,
+        });
+        showNotice(`Successfully updated details for "${studentName}".`, 'success');
+      } catch (error) {
+        showNotice(`Update failed: ${error.message}`, 'error');
+      } finally {
+        saveEditBtn.disabled = false;
+        saveEditBtn.textContent = 'Update Record (PUT /api)';
+      }
     });
 
     function requestDeleteStudent(rec) {
