@@ -696,6 +696,55 @@
     }
     .chip-absent .chip-dot { background-color: var(--absent-dot); }
 
+    .chip-delete-btn {
+      background: none;
+      border: none;
+      color: inherit;
+      padding: 0 0.15rem;
+      margin-left: 0.15rem;
+      font-size: 0.82rem;
+      line-height: 1;
+      cursor: pointer;
+      opacity: 0.45;
+      border-radius: 2px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.15s ease, background 0.15s ease;
+    }
+    .chip-delete-btn:hover {
+      opacity: 1;
+      background: rgba(0, 0, 0, 0.08);
+    }
+
+    .btn-action-delete {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      background: var(--surface-white);
+      border: 1px solid var(--border-color);
+      color: var(--absent-text);
+      padding: 0.26rem 0.55rem;
+      border-radius: 4px;
+      font-family: var(--font-sans);
+      font-size: 0.74rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+
+    .btn-action-delete:hover:not(:disabled) {
+      background-color: var(--absent-bg);
+      border-color: var(--absent-border);
+      color: #6C221E;
+    }
+
+    .btn-action-delete svg {
+      width: 13px;
+      height: 13px;
+    }
+
     .chip-staged {
       animation: pulseOutline 1.5s infinite;
       font-weight: 600;
@@ -921,7 +970,8 @@
       <div class="context-meta">
         <span>Database: <code class="mono-code">LabAttendanceDBBAUTISTA</code></span>
         <span>Collection: <code class="mono-code">daily_attendance</code></span>
-        <span>API Gateway: <code class="mono-code">student-api-backend-fawn.vercel.app</code></span>
+        <span>Operations: <code class="mono-code">CRUD (GET, POST, DELETE)</code></span>
+        <span>Gateway: <code class="mono-code">student-api-backend-fawn.vercel.app</code></span>
       </div>
       <label class="preview-mode-switch" for="stageChangesToggle">
         <input type="checkbox" id="stageChangesToggle" checked />
@@ -1048,7 +1098,7 @@
       <section class="panel" aria-labelledby="ledgerHeading">
         <div class="panel-header">
           <h2 class="panel-title" id="ledgerHeading">Official Laboratory Attendance Roster (<span id="visibleCount">0</span>)</h2>
-          <span class="endpoint-tag">GET /api</span>
+          <span class="endpoint-tag">GET &bull; DELETE /api</span>
         </div>
 
         <div class="console-toolbar">
@@ -1076,6 +1126,7 @@
                 <th>Subject</th>
                 <th>Section</th>
                 <th>Session Attendance Log (YYYY-MM-DD)</th>
+                <th style="text-align: right; width: 95px;">Actions</th>
               </tr>
             </thead>
             <tbody id="recordsTableBody"></tbody>
@@ -1209,7 +1260,7 @@
       };
     }
 
-    function buildStatusChip(dateStr, statusStr, isStaged = false) {
+    function buildStatusChip(dateStr, statusStr, isStaged = false, onDelete = null) {
       const chip = document.createElement('span');
       const lower = statusStr.toLowerCase();
       let variant = 'chip-present';
@@ -1227,6 +1278,20 @@
         ? `+ NEW ${dateStr} · ${statusStr}`
         : `${dateStr} · ${statusStr}`;
       chip.appendChild(label);
+
+      if (onDelete && !isStaged) {
+        const delBtn = document.createElement('button');
+        delBtn.type = 'button';
+        delBtn.className = 'chip-delete-btn';
+        delBtn.innerHTML = '&times;';
+        delBtn.title = `Remove ${dateStr} from attendance log`;
+        delBtn.setAttribute('aria-label', `Remove attendance date ${dateStr}`);
+        delBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          onDelete();
+        });
+        chip.appendChild(delBtn);
+      }
 
       return chip;
     }
@@ -1450,17 +1515,42 @@
             .sort((a, b) => a.date.localeCompare(b.date));
 
           for (const item of sorted) {
-            wrap.appendChild(buildStatusChip(item.date, item.status, false));
+            wrap.appendChild(
+              buildStatusChip(item.date, item.status, false, () => {
+                requestDeleteAttendanceDate(rec, item.date, item.status);
+              })
+            );
           }
 
           tdDates.appendChild(wrap);
         }
+
+        const tdAction = document.createElement('td');
+        tdAction.style.textAlign = 'right';
+
+        const delBtn = document.createElement('button');
+        delBtn.type = 'button';
+        delBtn.className = 'btn-action-delete';
+        delBtn.title = `Delete "${rec.studentName}" from daily_attendance`;
+        delBtn.setAttribute('aria-label', `Delete student ${rec.studentName}`);
+        delBtn.innerHTML = `
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polyline points="3 6 5 6 21 6"></polyline>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+          </svg>
+          <span>Delete</span>
+        `;
+        delBtn.addEventListener('click', () => {
+          requestDeleteStudent(rec);
+        });
+        tdAction.appendChild(delBtn);
 
         tr.appendChild(tdIndex);
         tr.appendChild(tdName);
         tr.appendChild(tdSubject);
         tr.appendChild(tdSection);
         tr.appendChild(tdDates);
+        tr.appendChild(tdAction);
         recordsTableBody.appendChild(tr);
       });
     }
@@ -1533,7 +1623,7 @@
       }
     }
 
-    function openPreviewModal(title, subtitle, rows, onConfirm) {
+    function openPreviewModal(title, subtitle, rows, onConfirm, isDanger = false) {
       previewModalTitle.textContent = title;
       previewModalSubtitle.textContent = subtitle;
       previewModalContent.replaceChildren();
@@ -1559,6 +1649,16 @@
         previewModalContent.appendChild(line);
       }
 
+      if (isDanger) {
+        confirmPreviewBtn.style.backgroundColor = 'var(--absent-dot)';
+        confirmPreviewBtn.style.borderColor = 'var(--absent-dot)';
+        confirmPreviewBtn.textContent = 'Confirm Permanent Deletion';
+      } else {
+        confirmPreviewBtn.style.backgroundColor = '';
+        confirmPreviewBtn.style.borderColor = '';
+        confirmPreviewBtn.textContent = 'Confirm & Commit to MongoDB';
+      }
+
       pendingConfirmCallback = onConfirm;
       previewModal.classList.add('open');
     }
@@ -1566,6 +1666,9 @@
     function closePreviewModal() {
       previewModal.classList.remove('open');
       pendingConfirmCallback = null;
+      confirmPreviewBtn.style.backgroundColor = '';
+      confirmPreviewBtn.style.borderColor = '';
+      confirmPreviewBtn.textContent = 'Confirm & Commit to MongoDB';
     }
 
     cancelPreviewBtn.addEventListener('click', closePreviewModal);
@@ -1579,6 +1682,105 @@
       closePreviewModal();
       await fn();
     });
+
+    function requestDeleteStudent(rec) {
+      clearNotice();
+      const studentId = String(rec._id);
+      const studentName = rec.studentName || 'Student';
+      const logCount = Array.isArray(rec.attendanceDates) ? rec.attendanceDates.length : 0;
+
+      openPreviewModal(
+        'Confirm Student Record Deletion',
+        `Are you sure you want to permanently delete "${studentName}" from daily_attendance? This removes the student document and all associated session logs.`,
+        [
+          { label: 'Student Full Name', value: studentName },
+          { label: 'MongoDB _id', value: studentId },
+          { label: 'Course / Section', value: `${rec.subjectName} · ${rec.section}` },
+          { label: 'Logged Sessions', value: `${logCount} session date(s)` },
+          { label: 'Database Method', value: 'DELETE /api (findByIdAndDelete)' },
+        ],
+        () => commitDeleteStudent(studentId, studentName),
+        true
+      );
+    }
+
+    async function commitDeleteStudent(studentId, studentName) {
+      showNotice(`Deleting "${studentName}" from MongoDB Atlas...`, 'success');
+      try {
+        const response = await fetch(`${API_BASE_URL}/api`, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+          },
+          body: JSON.stringify({ studentId }),
+        });
+
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          throw new Error(result.error || result.details || `HTTP ${response.status}`);
+        }
+
+        await loadAttendanceRecords({
+          silentNotice: true,
+        });
+        showNotice(
+          `Successfully deleted student "${studentName}" from daily_attendance.`,
+          'success'
+        );
+      } catch (error) {
+        showNotice(`Deletion failed: ${error.message}`, 'error');
+      }
+    }
+
+    function requestDeleteAttendanceDate(rec, dateStr, statusStr) {
+      clearNotice();
+      const studentId = String(rec._id);
+      const studentName = rec.studentName || 'Student';
+
+      openPreviewModal(
+        'Confirm Attendance Session Deletion',
+        `Remove the recorded attendance session on ${dateStr} (${statusStr}) for "${studentName}"?`,
+        [
+          { label: 'Enrolled Student', value: studentName },
+          { label: 'Session Date', value: dateStr },
+          { label: 'Attendance Status', value: statusStr },
+          { label: 'Database Method', value: 'DELETE /api/attendance ($pull attendanceDates)' },
+        ],
+        () => commitDeleteAttendanceDate(studentId, dateStr, studentName),
+        true
+      );
+    }
+
+    async function commitDeleteAttendanceDate(studentId, dateStr, studentName) {
+      showNotice(`Removing session ${dateStr} for "${studentName}"...`, 'success');
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/attendance`, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+          },
+          body: JSON.stringify({ studentId, date: dateStr }),
+        });
+
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          throw new Error(result.error || result.details || `HTTP ${response.status}`);
+        }
+
+        await loadAttendanceRecords({
+          silentNotice: true,
+          preserveStudentId: studentId,
+        });
+        showNotice(
+          `Successfully removed attendance date ${dateStr} for "${studentName}".`,
+          'success'
+        );
+      } catch (error) {
+        showNotice(`Failed to remove session: ${error.message}`, 'error');
+      }
+    }
 
     async function commitCreateStudent(studentName, subjectName, section) {
       createStudentBtn.disabled = true;
