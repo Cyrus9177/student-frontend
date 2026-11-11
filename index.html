@@ -100,9 +100,9 @@
     }
 
     .topbar-inner {
-      max-width: 1240px;
+      max-width: 1380px;
       margin: 0 auto;
-      padding: 1rem 1.5rem;
+      padding: 0.85rem 1.25rem;
       display: flex;
       flex-wrap: wrap;
       justify-content: space-between;
@@ -216,9 +216,9 @@
 
     /* Main Workspace Layout */
     .console-wrapper {
-      max-width: 1240px;
+      max-width: 1380px;
       margin: 0 auto;
-      padding: 1.5rem;
+      padding: 1.25rem 1.25rem;
     }
 
     /* Subheader Metadata Strip */
@@ -361,12 +361,12 @@
     /* Two-Column Workspace: Left Controls + Right Data Console */
     .console-grid {
       display: grid;
-      grid-template-columns: 350px 1fr;
-      gap: 1.5rem;
+      grid-template-columns: 275px minmax(0, 1fr);
+      gap: 1rem;
       align-items: start;
     }
 
-    @media (max-width: 960px) {
+    @media (max-width: 1120px) {
       .console-grid {
         grid-template-columns: 1fr;
       }
@@ -585,18 +585,19 @@
 
     .table-scroll {
       overflow-x: auto;
+      scrollbar-width: thin;
     }
 
     table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 0.84rem;
+      font-size: 0.8rem;
     }
 
     th,
     td {
       text-align: left;
-      padding: 0.75rem 0.9rem;
+      padding: 0.55rem 0.5rem;
       border-bottom: 1px solid var(--border-color);
       vertical-align: middle;
     }
@@ -604,10 +605,10 @@
     th {
       background-color: var(--surface-muted);
       color: var(--text-secondary);
-      font-size: 0.7rem;
+      font-size: 0.67rem;
       font-weight: 600;
       text-transform: uppercase;
-      letter-spacing: 0.06em;
+      letter-spacing: 0.05em;
       white-space: nowrap;
     }
 
@@ -625,27 +626,40 @@
 
     .col-index {
       font-family: var(--font-mono);
-      font-size: 0.72rem;
+      font-size: 0.7rem;
       color: var(--text-secondary);
-      width: 42px;
+      width: 28px;
+      text-align: center;
+      padding-left: 0.35rem;
+      padding-right: 0.2rem;
+    }
+
+    .col-action {
+      text-align: right;
+      width: 135px;
+      min-width: 130px;
+      white-space: nowrap;
+      padding-right: 0.6rem;
     }
 
     .student-cell-name {
       font-weight: 600;
       color: var(--text-main);
+      font-size: 0.82rem;
     }
 
     .subject-cell {
       color: var(--text-main);
+      font-size: 0.78rem;
     }
 
     .section-code {
       font-family: var(--font-mono);
-      font-size: 0.74rem;
+      font-size: 0.7rem;
       font-weight: 500;
       color: var(--navy-primary);
       background: var(--navy-subtle);
-      padding: 0.16rem 0.48rem;
+      padding: 0.12rem 0.38rem;
       border-radius: 3px;
       white-space: nowrap;
       display: inline-block;
@@ -654,10 +668,21 @@
     .dates-container {
       display: flex;
       flex-wrap: wrap;
-      gap: 0.38rem;
+      gap: 0.28rem;
     }
 
     .status-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.28rem;
+      padding: 0.12rem 0.42rem;
+      border-radius: 3px;
+      font-family: var(--font-mono);
+      font-size: 0.69rem;
+      font-weight: 500;
+      border: 1px solid transparent;
+      white-space: nowrap;
+    }
       display: inline-flex;
       align-items: center;
       gap: 0.35rem;
@@ -717,49 +742,37 @@
       background: rgba(0, 0, 0, 0.08);
     }
 
-    .btn-action-edit {
+    .btn-action-edit,
+    .btn-action-delete {
       display: inline-flex;
       align-items: center;
-      gap: 0.35rem;
+      gap: 0.2rem;
       background: var(--surface-white);
       border: 1px solid var(--border-color);
-      color: var(--navy-primary);
-      padding: 0.26rem 0.55rem;
+      padding: 0.18rem 0.38rem;
       border-radius: 4px;
       font-family: var(--font-sans);
-      font-size: 0.74rem;
+      font-size: 0.7rem;
       font-weight: 500;
       cursor: pointer;
       transition: all 0.15s ease;
       white-space: nowrap;
+      line-height: 1.2;
+      flex-shrink: 0;
+    }
+
+    .btn-action-edit {
+      color: var(--navy-primary);
     }
 
     .btn-action-edit:hover:not(:disabled) {
       background-color: var(--navy-subtle);
       border-color: var(--navy-primary);
-      color: var(--navy-primary);
-    }
-
-    .btn-action-edit svg {
-      width: 13px;
-      height: 13px;
     }
 
     .btn-action-delete {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.35rem;
-      background: var(--surface-white);
-      border: 1px solid var(--border-color);
       color: var(--absent-text);
-      padding: 0.26rem 0.55rem;
-      border-radius: 4px;
-      font-family: var(--font-sans);
-      font-size: 0.74rem;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.15s ease;
-      white-space: nowrap;
+      margin-left: 0.2rem;
     }
 
     .btn-action-delete:hover:not(:disabled) {
@@ -768,9 +781,11 @@
       color: #6C221E;
     }
 
+    .btn-action-edit svg,
     .btn-action-delete svg {
-      width: 13px;
-      height: 13px;
+      width: 11px;
+      height: 11px;
+      flex-shrink: 0;
     }
 
     .chip-staged {
@@ -1154,7 +1169,7 @@
                 <th>Subject</th>
                 <th>Section</th>
                 <th>Session Attendance Log (YYYY-MM-DD)</th>
-                <th style="text-align: right; width: 145px;">Actions</th>
+                <th class="col-action">Actions</th>
               </tr>
             </thead>
             <tbody id="recordsTableBody"></tbody>
@@ -1590,8 +1605,7 @@
         }
 
         const tdAction = document.createElement('td');
-        tdAction.style.textAlign = 'right';
-        tdAction.style.whiteSpace = 'nowrap';
+        tdAction.className = 'col-action';
 
         const editBtn = document.createElement('button');
         editBtn.type = 'button';
