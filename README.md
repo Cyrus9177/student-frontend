@@ -120,6 +120,27 @@ Appends a `{ date, status }` object to an existing student's `attendanceDates` a
 }
 ```
 
+### 4. `DELETE /api` — Delete Student Document (CRUD: Delete)
+Permanently deletes a student record from `LabAttendanceDBBAUTISTA.daily_attendance` using Mongoose `findByIdAndDelete()`.
+
+**Request Body or Query Parameter:**
+```json
+{
+  "studentId": "6ad1e624df86e9984c242ce2"
+}
+```
+
+### 5. `DELETE /api/attendance` — Delete Session Attendance Date (CRUD: Delete)
+Removes a specific laboratory session date from a student's `attendanceDates` array using atomic MongoDB `$pull`.
+
+**Request Body or Query Parameter:**
+```json
+{
+  "studentId": "6ad1e624df86e9984c242ce2",
+  "date": "2026-10-29"
+}
+```
+
 ---
 
 ## ✨ Frontend Features & Design System
